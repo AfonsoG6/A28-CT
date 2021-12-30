@@ -3,15 +3,8 @@
 local.properties,0\7\0712df971a99ac4d2fccb8e0fb19f377f3374cca
 X
 (gradle/wrapper/gradle-wrapper.properties,f\b\fbe448ebfc3eb2d4e308f6b8b043666f5b57235e
-L
-.idea/codeStyles/Project.xml,6\e\6ecd6000a7b6f4a2884412ff19f74193ed089648
-T
-$.idea/codeStyles/codeStyleConfig.xml,d\d\dd7b3350c29c49497756c7f32c69a3bed18b1cba
 >
 hub/.gitignore,f\5\f5c4a58dda7771caa94a687722b401b44716cdd2
-:
-
-.gitignore,a\5\a5cc2925ca8258af241be7e5b0381edf30266302
 ;
 gradlew.bat,2\a\2a45a911a8f1836b0b6c5b758962572012d8f8c3
 A
