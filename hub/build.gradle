@@ -2,6 +2,11 @@ plugins {
     id 'idea'
     id 'java'
     id 'com.google.protobuf' version '0.8.18'
+    id 'application'
+}
+
+application {
+    mainClassName = "com.example.hub.HubMain"
 }
 
 def protobufVersion = '3.19.1'
@@ -46,6 +51,6 @@ test {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }
