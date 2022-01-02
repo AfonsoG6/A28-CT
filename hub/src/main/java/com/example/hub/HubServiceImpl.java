@@ -22,6 +22,7 @@ public class HubServiceImpl extends HubServiceGrpc.HubServiceImplBase {
 			responseObserver.onError(INVALID_ARGUMENT.withDescription("Input cannot be empty!").asRuntimeException());
 			return;
 		}
+		System.out.println("Received: " + content);
 		builder.setContent("Hello " + content + "!");
 		PingResponse response = builder.build();
 		// Send Response

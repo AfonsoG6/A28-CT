@@ -1,0 +1,14 @@
+syntax = "proto3";
+package com.example.hub.grpc;
+
+message PingRequest {
+  string content = 1;
+}
+
+message PingResponse {
+  string content = 1;
+}
+
+service HubService {
+  rpc ping(PingRequest) returns (PingResponse);
+}
