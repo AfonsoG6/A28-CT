@@ -9,8 +9,6 @@ import com.example.hub.grpc.Hub.PingRequest;
 import com.example.hub.grpc.Hub.PingResponse;
 import com.example.hub.grpc.HubServiceGrpc;
 import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
-
 import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
@@ -24,12 +22,9 @@ public class MainActivity extends AppCompatActivity {
 	public void onPasswordSubmit(View view) {
 		try {
 			EditText passwordET = findViewById(R.id.passwordTextBox);
-			ManagedChannel channel = ManagedChannelBuilder.forAddress("10.0.2.2", 29292).usePlaintext().build();
-			HubServiceGrpc.HubServiceBlockingStub stub = HubServiceGrpc.newBlockingStub(channel);
-			PingRequest pingRequest = PingRequest.newBuilder().setContent(passwordET.getText().toString()).build();
-			PingResponse pingResponse = stub.withDeadlineAfter(5, TimeUnit.SECONDS).ping(pingRequest);
-			passwordET.setText(pingResponse.getContent());
-			channel.shutdown();
+			HubFrontend frontend = new HubFrontend();
+			String pingResponseString = frontend.ping(passwordET.getText().toString());
+			passwordET.setText(pingResponseString);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
