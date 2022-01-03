@@ -22,7 +22,7 @@ public class MainActivity extends AppCompatActivity {
 	public void onPasswordSubmit(View view) {
 		try {
 			EditText passwordET = findViewById(R.id.passwordTextBox);
-			HubFrontend frontend = new HubFrontend();
+			HubFrontend frontend = new HubFrontend(getApplicationContext());
 			String pingResponseString = frontend.ping(passwordET.getText().toString());
 			passwordET.setText(pingResponseString);
 		}
