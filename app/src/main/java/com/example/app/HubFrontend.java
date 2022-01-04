@@ -33,7 +33,7 @@ public class HubFrontend {
 			throws NoSuchAlgorithmException, KeyStoreException, CertificateException,
 			IOException {
 		CertificateFactory cf = CertificateFactory.getInstance("X.509");
-		try (InputStream caCertInputStream = _resources.openRawResource(R.raw.ca_cert)) {
+		try (InputStream caCertInputStream = _resources.openRawResource(R.raw.hub_cert)) {
 			Certificate cert = cf.generateCertificate(caCertInputStream);
 			KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
 			keyStore.load(null, null);
@@ -60,6 +60,7 @@ public class HubFrontend {
 		return OkHttpChannelBuilder.forAddress("10.0.2.2", 29292)
 				.useTransportSecurity()
 				.sslSocketFactory(getSSLSocketFactory())
+				.hostnameVerifier((hostname, session) -> true) // Ignore hostname verification for now since the server is local
 				.build();
 	}
 
