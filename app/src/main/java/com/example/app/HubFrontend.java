@@ -13,6 +13,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -28,21 +29,28 @@ public class HubFrontend {
 		_resources = context.getResources();
 	}
 
+	private static KeyStore getKeyStore()
+			throws NoSuchAlgorithmException, KeyStoreException, CertificateException,
+			IOException {
+		CertificateFactory cf = CertificateFactory.getInstance("X.509");
+		try (InputStream caCertInputStream = _resources.openRawResource(R.raw.ca_cert)) {
+			Certificate cert = cf.generateCertificate(caCertInputStream);
+			KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+			keyStore.load(null, null);
+			keyStore.setCertificateEntry("CA", cert);
+			return keyStore;
+		}
+	}
+
 	private static SSLSocketFactory getSSLSocketFactory()
 			throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException, CertificateException,
 			IOException {
-		System.out.println("KeyStore Type: " + KeyStore.getDefaultType());
-		KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-		ks.load(null, null);
-		CertificateFactory cf = CertificateFactory.getInstance("X.509");
-		Certificate cert = cf.generateCertificate(_resources.openRawResource(R.raw.hub_cert));
-		ks.setCertificateEntry("customca", cert);
+		KeyStore keyStore = getKeyStore();
 
-		System.out.println("TrustManagerFactory Type: " + TrustManagerFactory.getDefaultAlgorithm());
 		TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-		trustManagerFactory.init(ks);
+		trustManagerFactory.init(keyStore);
 		SSLContext context = SSLContext.getInstance("TLS");
-		context.init(null, trustManagerFactory.getTrustManagers(), null);
+		context.init(null, trustManagerFactory.getTrustManagers(), new SecureRandom());
 		return context.getSocketFactory();
 	}
 

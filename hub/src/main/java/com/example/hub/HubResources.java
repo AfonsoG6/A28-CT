@@ -7,10 +7,10 @@ public class HubResources {
 	private static final String KEYS_PATH = RESOURCES_PATH + "keys_certs/";
 
 	public static File getCertChainFile() {
-		return new File(KEYS_PATH + "hub_cert.crt");
+		return new File(KEYS_PATH + "hub_cert.pem");
 	}
 
 	public static File getPrivateKeyFile() {
-		return new File(KEYS_PATH + "hub_privkey.pem");
+		return new File(KEYS_PATH + "hub_privkey_pk8.pem");
 	}
 }
