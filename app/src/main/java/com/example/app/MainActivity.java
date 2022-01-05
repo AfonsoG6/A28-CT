@@ -1,15 +1,10 @@
 package com.example.app;
 
-import androidx.appcompat.app.AppCompatActivity;
-
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
-import com.example.hub.grpc.Hub.PingRequest;
-import com.example.hub.grpc.Hub.PingResponse;
-import com.example.hub.grpc.HubServiceGrpc;
-import io.grpc.ManagedChannel;
-import java.util.concurrent.TimeUnit;
+import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -22,7 +17,7 @@ public class MainActivity extends AppCompatActivity {
 	public void onPasswordSubmit(View view) {
 		try {
 			EditText passwordET = findViewById(R.id.passwordTextBox);
-			HubFrontend frontend = new HubFrontend(getApplicationContext());
+			HubFrontend frontend = HubFrontend.getInstance(getApplicationContext());
 			String pingResponseString = frontend.ping(passwordET.getText().toString());
 			passwordET.setText(pingResponseString);
 		}

@@ -21,52 +21,50 @@ import java.security.cert.CertificateFactory;
 import java.util.concurrent.TimeUnit;
 
 public class HubFrontend {
-	private static Resources _resources;
+	private static HubFrontend instance; // HubFrontend is a singleton
+	private final SSLSocketFactory sslSocketFactory;
 
-	public HubFrontend(Context context) {
+	private HubFrontend(Context context) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException,
+			KeyManagementException {
 		// Install Conscrypt provider
 		Security.insertProviderAt(Conscrypt.newProvider(), Security.getProviders().length);
-		_resources = context.getResources();
-	}
 
-	private static KeyStore getKeyStore()
-			throws NoSuchAlgorithmException, KeyStoreException, CertificateException,
-			IOException {
+		// Create and configure a SSLSocketFactory
 		CertificateFactory cf = CertificateFactory.getInstance("X.509");
-		try (InputStream caCertInputStream = _resources.openRawResource(R.raw.hub_cert)) {
-			Certificate cert = cf.generateCertificate(caCertInputStream);
-			KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-			keyStore.load(null, null);
-			keyStore.setCertificateEntry("CA", cert);
-			return keyStore;
+		Certificate cert;
+		try (InputStream caCertInputStream = context.getResources().openRawResource(R.raw.hub_cert)) {
+			cert = cf.generateCertificate(caCertInputStream);
 		}
-	}
-
-	private static SSLSocketFactory getSSLSocketFactory()
-			throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException, CertificateException,
-			IOException {
-		KeyStore keyStore = getKeyStore();
+		KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+		keyStore.load(null, null);
+		keyStore.setCertificateEntry("CA", cert);
 
 		TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
 		trustManagerFactory.init(keyStore);
-		SSLContext context = SSLContext.getInstance("TLS");
-		context.init(null, trustManagerFactory.getTrustManagers(), new SecureRandom());
-		return context.getSocketFactory();
+		SSLContext sslContext = SSLContext.getInstance("TLS");
+		sslContext.init(null, trustManagerFactory.getTrustManagers(), new SecureRandom());
+		sslSocketFactory = sslContext.getSocketFactory();
 	}
 
-	private static ManagedChannel buildChannel()
-			throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException, CertificateException,
-			IOException {
+	// Common usage in an Activity: "HubFrontend.getInstance(getApplicationContext());"
+	public static HubFrontend getInstance(Context context)
+			throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException,
+			KeyManagementException {
+		if (instance == null) {
+			instance = new HubFrontend(context);
+		}
+		return instance;
+	}
+
+	private ManagedChannel buildChannel() {
 		return OkHttpChannelBuilder.forAddress("10.0.2.2", 29292)
 				.useTransportSecurity()
-				.sslSocketFactory(getSSLSocketFactory())
+				.sslSocketFactory(sslSocketFactory)
 				.hostnameVerifier((hostname, session) -> true) // Ignore hostname verification for now since the server is local
 				.build();
 	}
 
-	public String ping(String content)
-			throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException, CertificateException,
-			IOException {
+	public String ping(String content) {
 		ManagedChannel channel = buildChannel();
 		HubServiceGrpc.HubServiceBlockingStub stub = HubServiceGrpc.newBlockingStub(channel);
 		Hub.PingRequest pingRequest = Hub.PingRequest.newBuilder().setContent(content).build();
