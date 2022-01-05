@@ -1,8 +1,6 @@
 package com.example.app;
 
 import android.content.Context;
-import android.content.res.AssetManager;
-import android.content.res.Resources;
 import com.example.hub.grpc.Hub;
 import com.example.hub.grpc.HubServiceGrpc;
 import io.grpc.ManagedChannel;

@@ -1,12 +1,13 @@
 package com.example.hub;
 
-import com.example.hub.grpc.Hub.PingResponse;
 import com.example.hub.grpc.Hub.PingRequest;
+import com.example.hub.grpc.Hub.PingResponse;
 import com.example.hub.grpc.HubServiceGrpc;
 import io.grpc.Context;
 import io.grpc.stub.StreamObserver;
 
-import static io.grpc.Status.*;
+import static io.grpc.Status.DEADLINE_EXCEEDED;
+import static io.grpc.Status.INVALID_ARGUMENT;
 
 public class HubServiceImpl extends HubServiceGrpc.HubServiceImplBase {
 	@Override
