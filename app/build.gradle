@@ -23,8 +23,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
     lintOptions {
         disable 'GoogleAppIndexingWarning', 'HardcodedText', 'InvalidPackage'
@@ -36,6 +36,10 @@ android {
 def googlePlayServicesVersion = '18.0.1'
 def protobufVersion = '3.19.1'
 def grpcVersion = '1.43.1'
+
+task prepareKotlinBuildScriptModel {
+
+}
 
 dependencies {
     //implementation "com.google.android.gms:play-services-base:${googlePlayServicesVersion}"
