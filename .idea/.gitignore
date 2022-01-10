@@ -1,2 +1,4 @@
 # Default ignored files
 /shelf/
+!/deploymentTargetDropDown.xml
+!/workspace.xml
