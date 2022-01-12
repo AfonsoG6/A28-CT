@@ -9,6 +9,30 @@ message PingResponse {
   string content = 1;
 }
 
+message Empty {
+}
+
+message GetNewICCResponse {
+  string icc = 1;
+}
+
+message ClaimInfectionRequest {
+  bool isDummy = 1;
+  string icc = 2;
+  repeated string SKs = 3;
+}
+
+message QueryInfectedSKsRequest {
+  int32 lastQuery = 1;
+}
+
+message QueryInfectedSKsResponse {
+  repeated string SKs = 1;
+}
+
 service HubService {
   rpc ping(PingRequest) returns (PingResponse);
+  rpc getNewIcc(Empty) returns (GetNewICCResponse);
+  rpc claimInfection(ClaimInfectionRequest) returns (Empty);
+  rpc queryInfectedSKs(QueryInfectedSKsRequest) returns (QueryInfectedSKsResponse);
 }

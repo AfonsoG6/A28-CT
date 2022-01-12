@@ -21,6 +21,9 @@ dependencies {
     implementation "io.grpc:grpc-protobuf:${grpcVersion}"
     // https://mvnrepository.com/artifact/io.grpc/grpc-stub
     implementation "io.grpc:grpc-stub:${grpcVersion}"
+    // https://mvnrepository.com/artifact/org.postgresql/postgresql
+    implementation group: 'org.postgresql', name: 'postgresql', version: '42.1.4'
+
 
     implementation 'javax.annotation:javax.annotation-api:1.3.2'
     compileOnly 'org.apache.tomcat:annotations-api:6.0.53'
