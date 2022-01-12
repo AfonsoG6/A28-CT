@@ -11,6 +11,10 @@ import com.example.hub.grpc.HubServiceGrpc;
 import io.grpc.Context;
 import io.grpc.stub.StreamObserver;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.Random;
+
 import static io.grpc.Status.DEADLINE_EXCEEDED;
 import static io.grpc.Status.INVALID_ARGUMENT;
 
@@ -45,7 +49,7 @@ public class HubServiceImpl extends HubServiceGrpc.HubServiceImplBase {
 
 		byte[] array = new byte[64];
 		new Random().nextBytes(array);
-		String generatedICC = new String(array, Charset.forName("UTF-8"));
+		String generatedICC = new String(array, StandardCharsets.UTF_8);
 		GetNewICCResponse.Builder builder = GetNewICCResponse.newBuilder();
 		builder.setIcc(generatedICC);
 		GetNewICCResponse response = builder.build();

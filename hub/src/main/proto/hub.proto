@@ -10,7 +10,6 @@ message PingResponse {
 }
 
 message Empty {
-
 }
 
 message GetNewICCResponse {
@@ -18,17 +17,17 @@ message GetNewICCResponse {
 }
 
 message ClaimInfectionRequest {
-  boolean isDummy = 1;
+  bool isDummy = 1;
   string icc = 2;
-  repeat string SKs = 3;
+  repeated string SKs = 3;
 }
 
 message QueryInfectedSKsRequest {
-  i32 lastQuery = 1;
+  int32 lastQuery = 1;
 }
 
 message QueryInfectedSKsResponse {
-  repeat string SKs = 1;
+  repeated string SKs = 1;
 }
 
 service HubService {
