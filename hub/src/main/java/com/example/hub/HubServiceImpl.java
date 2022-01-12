@@ -41,7 +41,7 @@ public class HubServiceImpl extends HubServiceGrpc.HubServiceImplBase {
 	}
 
 	@Override
-	public void getNewICC(Empty request, StreamObserver<GetNewICCResponse> responseObserver) {
+	public void getNewIcc(Empty request, StreamObserver<GetNewICCResponse> responseObserver) {
 		if (Context.current().isCancelled()) {
 			responseObserver.onError(DEADLINE_EXCEEDED.withDescription("Deadline exceeded").asRuntimeException());
 			return;

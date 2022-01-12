@@ -22,7 +22,7 @@ public class InfectedSKs {
 		try {
 			Connection conn = PostgreSQLJDBC.getConnection();
 			int queryId = getLastQueryId();
-			String stmtString = "INSERT INTO infectedSks (sk, queryId) VALUES (?, ?);";
+			String stmtString = "INSERT INTO infectedSks (sk, query_id) VALUES (?, ?);";
 			PreparedStatement ps = conn.prepareStatement(stmtString);
 			for (InfectedSKs sk: sks){
 				ps.setString(1, sk.sk);
@@ -38,7 +38,7 @@ public class InfectedSKs {
 	public static List<InfectedSKs> queryInfectedSKs(int queryId) {
 		try {
 			Connection conn = PostgreSQLJDBC.getConnection();
-			String stmtString = "SELECT sk, queryId FROM infectedSks WHERE queryId > ?;";
+			String stmtString = "SELECT sk, query_id FROM infectedSks WHERE query_id > ?;";
 			PreparedStatement stmt = conn.prepareStatement(stmtString);
 			stmt.setInt(1, queryId);
 			ResultSet rs = stmt.executeQuery();
@@ -46,7 +46,7 @@ public class InfectedSKs {
 			ArrayList<InfectedSKs> infectedSKs = new ArrayList<>();
 			while (rs.next()) {
 				String sk = rs.getString("sk");
-				int qId = rs.getInt("queryId");
+				int qId = rs.getInt("query_id");
 				infectedSKs.add(new InfectedSKs(sk, qId));
 			}
 			return infectedSKs;
@@ -59,10 +59,10 @@ public class InfectedSKs {
 	private static int getLastQueryId() {
 		try {
 			Connection conn = PostgreSQLJDBC.getConnection();
-			String stmtString = "SELECT MAX(queryId) FROM infectedSKs;";
+			String stmtString = "SELECT MAX(query_id) FROM infectedSKs;";
 			ResultSet rs = conn.createStatement().executeQuery(stmtString);
 			if (rs.next())
-				return rs.getInt("queryId");
+				return rs.getInt("query_id");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
