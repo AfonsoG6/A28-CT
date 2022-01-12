@@ -64,9 +64,14 @@ public class HubServiceImpl extends HubServiceGrpc.HubServiceImplBase {
 			return;
 		}
 		System.out.println(request.getIcc());
+		boolean isDummy = request.getIsDummy();
 		Empty response = Empty.newBuilder().build();
-		responseObserver.onNext(response);
-		responseObserver.onCompleted();
+		if (isDummy) {
+			responseObserver.onNext(response);
+			responseObserver.onCompleted();
+			return;
+		}
+
 	}
 
 	@Override
