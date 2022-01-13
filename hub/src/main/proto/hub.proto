@@ -26,10 +26,15 @@ message GetNewICCResponse {
   string icc = 1;
 }
 
+message GetNewICCRequest {
+  string email = 1;
+  string password = 2;
+}
+
 message ClaimInfectionRequest {
   bool isDummy = 1;
   string icc = 2;
-  SKEpochDayPair sks = 3;
+  repeated SKEpochDayPair sks = 3;
 }
 
 // QueryInfectedSKs
@@ -47,7 +52,7 @@ message QueryInfectedSKsResponse {
 
 service HubService {
   rpc ping(PingRequest) returns (PingResponse);
-  rpc getNewIcc(Empty) returns (GetNewICCResponse);
+  rpc getNewIcc(GetNewICCRequest) returns (GetNewICCResponse);
   rpc claimInfection(ClaimInfectionRequest) returns (Empty);
   rpc queryInfectedSKs(QueryInfectedSKsRequest) returns (QueryInfectedSKsResponse);
 }

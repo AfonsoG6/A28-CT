@@ -2,6 +2,7 @@ package com.example.hub;
 
 import com.example.hub.grpc.Hub.*;
 import com.example.hub.grpc.HubServiceGrpc;
+import com.example.hub.models.HealthServiceManager;
 import com.example.hub.models.ICCManager;
 import io.grpc.Context;
 import io.grpc.stub.StreamObserver;
@@ -34,10 +35,22 @@ public class HubServiceImpl extends HubServiceGrpc.HubServiceImplBase {
 	}
 
 	@Override
-	public void getNewIcc(Empty request, StreamObserver<GetNewICCResponse> responseObserver) {
+	public void getNewIcc(GetNewICCRequest request, StreamObserver<GetNewICCResponse> responseObserver) {
 		if (Context.current().isCancelled()) {
 			responseObserver.onError(DEADLINE_EXCEEDED.withDescription("Deadline exceeded").asRuntimeException());
 			return;
+		}
+
+		try {
+			boolean exists = HealthServiceManager.logHealthService(request.getEmail(), request.getPassword());
+			if (!exists) {
+				responseObserver.onError(
+						PERMISSION_DENIED.withDescription("Health Service credentials invalid").asRuntimeException()
+				);
+				return;
+			}
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
 		}
 
 		String generatedICC;
@@ -60,13 +73,24 @@ public class HubServiceImpl extends HubServiceGrpc.HubServiceImplBase {
 			responseObserver.onError(DEADLINE_EXCEEDED.withDescription("Deadline exceeded").asRuntimeException());
 			return;
 		}
-		System.out.println(request.getIcc());
 		boolean isDummy = request.getIsDummy();
 		Empty response = Empty.newBuilder().build();
-		if (!isDummy) {
-			// TODO: Check if ICC is valid
-			// TODO: If valid, remove ICC from database, and add SKs to database
+		if (isDummy) {
+			responseObserver.onNext(response);
+			responseObserver.onCompleted();
+			return;
 		}
+		boolean isValid = ICCManager.existsICC(request.getIcc());
+		if (!isValid) {
+			responseObserver.onError(
+					NOT_FOUND.withDescription("Icc does not exist").asRuntimeException()
+			);
+			return;
+		}
+		ICCManager.deleteICC(request.getIcc());
+
+		// TODO: Add SKs to database
+
 		responseObserver.onNext(response);
 		responseObserver.onCompleted();
 	}
