@@ -1,3 +1,8 @@
+DROP TABLE usable_iccs CASCADE;
+DROP TABLE infected_sks CASCADE;
+DROP TABLE health_services CASCADE;
+
+
 CREATE TABLE usable_iccs (
     code VARCHAR(20) PRIMARY KEY NOT NULL
 );
