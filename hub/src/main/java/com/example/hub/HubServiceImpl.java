@@ -1,24 +1,18 @@
 package com.example.hub;
 
-import com.example.hub.grpc.Hub.PingRequest;
-import com.example.hub.grpc.Hub.PingResponse;
-import com.example.hub.grpc.Hub.GetNewICCResponse;
-import com.example.hub.grpc.Hub.QueryInfectedSKsRequest;
-import com.example.hub.grpc.Hub.QueryInfectedSKsResponse;
-import com.example.hub.grpc.Hub.ClaimInfectionRequest;
-import com.example.hub.grpc.Hub.Empty;
+import com.example.hub.grpc.Hub.*;
 import com.example.hub.grpc.HubServiceGrpc;
+import com.example.hub.models.HealthServiceManager;
+import com.example.hub.models.ICCManager;
 import io.grpc.Context;
 import io.grpc.stub.StreamObserver;
 
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.Random;
+import java.security.NoSuchAlgorithmException;
 
-import static io.grpc.Status.DEADLINE_EXCEEDED;
-import static io.grpc.Status.INVALID_ARGUMENT;
+import static io.grpc.Status.*;
 
 public class HubServiceImpl extends HubServiceGrpc.HubServiceImplBase {
+
 	@Override
 	public void ping(PingRequest request, StreamObserver<PingResponse> responseObserver) {
 		if (Context.current().isCancelled()) {
@@ -41,15 +35,31 @@ public class HubServiceImpl extends HubServiceGrpc.HubServiceImplBase {
 	}
 
 	@Override
-	public void getNewICC(Empty request, StreamObserver<GetNewICCResponse> responseObserver) {
+	public void getNewIcc(GetNewICCRequest request, StreamObserver<GetNewICCResponse> responseObserver) {
 		if (Context.current().isCancelled()) {
 			responseObserver.onError(DEADLINE_EXCEEDED.withDescription("Deadline exceeded").asRuntimeException());
 			return;
 		}
 
-		byte[] array = new byte[64];
-		new Random().nextBytes(array);
-		String generatedICC = new String(array, StandardCharsets.UTF_8);
+		try {
+			boolean exists = HealthServiceManager.logHealthService(request.getEmail(), request.getPassword());
+			if (!exists) {
+				responseObserver.onError(
+						PERMISSION_DENIED.withDescription("Health Service credentials invalid").asRuntimeException()
+				);
+				return;
+			}
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		}
+
+		String generatedICC;
+		try {
+			generatedICC = ICCManager.generateICC();
+		} catch (NoSuchAlgorithmException e) {
+			responseObserver.onError(UNAVAILABLE.withDescription("Internal Error: " + e.getMessage()).asRuntimeException());
+			return;
+		}
 		GetNewICCResponse.Builder builder = GetNewICCResponse.newBuilder();
 		builder.setIcc(generatedICC);
 		GetNewICCResponse response = builder.build();
@@ -63,7 +73,6 @@ public class HubServiceImpl extends HubServiceGrpc.HubServiceImplBase {
 			responseObserver.onError(DEADLINE_EXCEEDED.withDescription("Deadline exceeded").asRuntimeException());
 			return;
 		}
-		System.out.println(request.getIcc());
 		boolean isDummy = request.getIsDummy();
 		Empty response = Empty.newBuilder().build();
 		if (isDummy) {
@@ -71,7 +80,19 @@ public class HubServiceImpl extends HubServiceGrpc.HubServiceImplBase {
 			responseObserver.onCompleted();
 			return;
 		}
+		boolean isValid = ICCManager.existsICC(request.getIcc());
+		if (!isValid) {
+			responseObserver.onError(
+					NOT_FOUND.withDescription("Icc does not exist").asRuntimeException()
+			);
+			return;
+		}
+		ICCManager.deleteICC(request.getIcc());
 
+		// TODO: Add SKs to database
+
+		responseObserver.onNext(response);
+		responseObserver.onCompleted();
 	}
 
 	@Override

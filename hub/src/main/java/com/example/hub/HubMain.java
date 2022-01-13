@@ -1,5 +1,6 @@
 package com.example.hub;
 
+import com.example.hub.database.PostgreSQLJDBC;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 
@@ -12,6 +13,7 @@ public class HubMain {
 			System.out.println("Hub does not take any arguments");
 			return;
 		}
+		PostgreSQLJDBC.connect();
 		int hubPort = 29292;
 		Server server = prepareServer(hubPort);
 		server.start();
