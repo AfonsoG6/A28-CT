@@ -20,13 +20,14 @@ public class PostgreSQLJDBC {
 	public static void setupDatabase() throws SQLException {
 		connect();
 		String sql = "CREATE TABLE icc (" +
-				"id INT PRIMARY KEY NOT NULL," +
-				"code VARCHAR(256) NOT NULL UNIQUE);" +
+				"code VARCHAR(256) PRIMARY KEY NOT NULL);" +
 
 				"CREATE TABLE infected_sks (" +
-				"id INT PRIMARY KEY NOT NULL," +
+				"epoch_day INT PRIMARY KEY NOT NULL," + // epochtime day (epochtime%86400) associated to SK (SK was used by client during this day)
 				"sk VARCHAR(256) NOT NULL," +
-				"query_id INT NOT NULL);" +
+				"ins_epochtime INT NOT NULL);" +  // epochtime of insertion
+				// By using the ins_epochtime, we can receive from a client the epochtime of his last query,
+				// and only send him SKs with newer/higher ins_epochtime
 
 				"CREATE TABLE health_services (" +
 				"id INT PRIMARY KEY NOT NULL," +
