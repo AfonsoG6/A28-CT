@@ -1,24 +1,17 @@
 package com.example.hub;
 
-import com.example.hub.grpc.Hub.PingRequest;
-import com.example.hub.grpc.Hub.PingResponse;
-import com.example.hub.grpc.Hub.GetNewICCResponse;
-import com.example.hub.grpc.Hub.QueryInfectedSKsRequest;
-import com.example.hub.grpc.Hub.QueryInfectedSKsResponse;
-import com.example.hub.grpc.Hub.ClaimInfectionRequest;
-import com.example.hub.grpc.Hub.Empty;
+import com.example.hub.grpc.Hub.*;
 import com.example.hub.grpc.HubServiceGrpc;
+import com.example.hub.models.ICCManager;
 import io.grpc.Context;
 import io.grpc.stub.StreamObserver;
 
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.Random;
+import java.security.NoSuchAlgorithmException;
 
-import static io.grpc.Status.DEADLINE_EXCEEDED;
-import static io.grpc.Status.INVALID_ARGUMENT;
+import static io.grpc.Status.*;
 
 public class HubServiceImpl extends HubServiceGrpc.HubServiceImplBase {
+
 	@Override
 	public void ping(PingRequest request, StreamObserver<PingResponse> responseObserver) {
 		if (Context.current().isCancelled()) {
@@ -47,9 +40,13 @@ public class HubServiceImpl extends HubServiceGrpc.HubServiceImplBase {
 			return;
 		}
 
-		byte[] array = new byte[64];
-		new Random().nextBytes(array);
-		String generatedICC = new String(array, StandardCharsets.UTF_8);
+		String generatedICC;
+		try {
+			generatedICC = ICCManager.generateICC();
+		} catch (NoSuchAlgorithmException e) {
+			responseObserver.onError(UNAVAILABLE.withDescription("Internal Error: " + e.getMessage()).asRuntimeException());
+			return;
+		}
 		GetNewICCResponse.Builder builder = GetNewICCResponse.newBuilder();
 		builder.setIcc(generatedICC);
 		GetNewICCResponse response = builder.build();
@@ -66,12 +63,12 @@ public class HubServiceImpl extends HubServiceGrpc.HubServiceImplBase {
 		System.out.println(request.getIcc());
 		boolean isDummy = request.getIsDummy();
 		Empty response = Empty.newBuilder().build();
-		if (isDummy) {
-			responseObserver.onNext(response);
-			responseObserver.onCompleted();
-			return;
+		if (!isDummy) {
+			// TODO: Check if ICC is valid
+			// TODO: If valid, remove ICC from database, and add SKs to database
 		}
-
+		responseObserver.onNext(response);
+		responseObserver.onCompleted();
 	}
 
 	@Override

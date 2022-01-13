@@ -1,6 +1,17 @@
 syntax = "proto3";
 package com.example.hub.grpc;
 
+// Structures used in Requests and Responses
+
+message Empty {}
+
+message SKEpochDayPair {
+  int64 epochDay = 1;
+  string sk = 2;
+}
+
+// Ping
+
 message PingRequest {
   string content = 1;
 }
@@ -9,8 +20,7 @@ message PingResponse {
   string content = 1;
 }
 
-message Empty {
-}
+// GetNewICC
 
 message GetNewICCResponse {
   string icc = 1;
@@ -19,16 +29,21 @@ message GetNewICCResponse {
 message ClaimInfectionRequest {
   bool isDummy = 1;
   string icc = 2;
-  repeated string SKs = 3;
+  SKEpochDayPair sks = 3;
 }
 
+// QueryInfectedSKs
+
 message QueryInfectedSKsRequest {
-  int32 lastQuery = 1;
+  int64 lastQueryEpoch = 1;
 }
 
 message QueryInfectedSKsResponse {
-  repeated string SKs = 1;
+  int64 queryEpoch = 1;
+  repeated SKEpochDayPair sks = 3;
 }
+
+// Service definition
 
 service HubService {
   rpc ping(PingRequest) returns (PingResponse);
