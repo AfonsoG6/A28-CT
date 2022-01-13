@@ -1,5 +1,8 @@
 package com.example.hub.database;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.sql.*;
 
 public class PostgreSQLJDBC {
@@ -8,34 +11,30 @@ public class PostgreSQLJDBC {
 	public static void connect() {
 		try {
 			Class.forName("org.postgresql.Driver");
-			Connection conn = DriverManager.getConnection(
-					"jdbc:postgresql://localhost:5432/sirs", "postgres", "postgres"
+			PostgreSQLJDBC.connection = DriverManager.getConnection(
+					"jdbc:postgresql://localhost:5432/sirs",
+					"postgres",
+					"postgres"
 			);
-			PostgreSQLJDBC.connection = conn;
 		} catch (ClassNotFoundException | SQLException e) {
 			e.printStackTrace();
 		}
 	}
 
-	public static void setupDatabase() throws SQLException {
+	public static void setupDatabase() throws SQLException, IOException {
 		connect();
-		String sql = "CREATE TABLE icc (" +
-				"code VARCHAR(256) PRIMARY KEY NOT NULL);" +
 
-				"CREATE TABLE infected_sks (" +
-				"epoch_day INT PRIMARY KEY NOT NULL," + // epochtime day (epochtime%86400) associated to SK (SK was used by client during this day)
-				"sk VARCHAR(256) NOT NULL," +
-				"ins_epochtime INT NOT NULL);" +  // epochtime of insertion
-				// By using the ins_epochtime, we can receive from a client the epochtime of his last query,
-				// and only send him SKs with newer/higher ins_epochtime
+		StringBuilder schemaStringBuilder = new StringBuilder();
+		try (BufferedReader sqlReader = new BufferedReader(new FileReader("src/main/resources/sql/schema.sql"))) {
+			for (String line; (line = sqlReader.readLine()) != null; ) {
+				schemaStringBuilder.append(line).append("\n");
+			}
+		}
+		String sql = schemaStringBuilder.toString();
 
-				"CREATE TABLE health_services (" +
-				"id INT PRIMARY KEY NOT NULL," +
-				"email VARCHAR(100) NOT NULL UNIQUE," +
-				"hashed_password VARCHAR(256) NOT NULL)";
-
-		Statement statement = connection.createStatement();
-		statement.execute(sql);
+		try (Statement statement = connection.createStatement()) {
+			statement.execute(sql);
+		}
 	}
 
 	public static Connection getConnection() {
@@ -45,7 +44,7 @@ public class PostgreSQLJDBC {
 	public static void main(String[] args) {
 		try {
 			setupDatabase();
-		} catch (SQLException e) {
+		} catch (SQLException | IOException e) {
 			e.printStackTrace();
 		}
 	}

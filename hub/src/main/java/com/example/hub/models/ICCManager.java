@@ -23,7 +23,7 @@ public class ICCManager {
 
 	public static void insertICC(String icc) {
 		Connection conn = PostgreSQLJDBC.getConnection();
-		String stmtString = "INSERT INTO icc (value) VALUES (?);";
+		String stmtString = "INSERT INTO usable_iccs (code) VALUES (?);";
 		try (PreparedStatement stmt = conn.prepareStatement(stmtString)) {
 			stmt.setString(1, icc);
 			stmt.executeUpdate();
@@ -34,7 +34,7 @@ public class ICCManager {
 
 	public static boolean existsICC(String icc) {
 		Connection conn = PostgreSQLJDBC.getConnection();
-		String stmtString = "SELECT * FROM icc WHERE value = ?;";
+		String stmtString = "SELECT * FROM usable_iccs WHERE code = ?;";
 		try (PreparedStatement stmt = conn.prepareStatement(stmtString)) {
 			stmt.setString(1, icc);
 			ResultSet rs = stmt.executeQuery();
@@ -47,7 +47,7 @@ public class ICCManager {
 
 	public static void deleteICC(String icc) {
 		Connection conn = PostgreSQLJDBC.getConnection();
-		String stmtString = "DELETE FROM icc WHERE value = ?;";
+		String stmtString = "DELETE FROM usable_iccs WHERE code = ?;";
 		try (PreparedStatement stmt = conn.prepareStatement(stmtString)) {
 			stmt.setString(1, icc);
 			stmt.executeUpdate();
