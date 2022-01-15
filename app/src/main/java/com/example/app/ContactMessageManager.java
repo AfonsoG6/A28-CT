@@ -1,5 +1,8 @@
 package com.example.app;
 
+import android.content.Context;
+import com.example.app.database.DatabaseHelper;
+import com.example.app.exceptions.DatabaseInsertionFailedException;
 import com.example.app.exceptions.NotFoundInDatabaseException;
 
 import java.io.ByteArrayOutputStream;
@@ -15,12 +18,22 @@ public class ContactMessageManager {
 	private static final int SECONDS_TO_UPDATE_MSG = 300; // 5min = 5*60s
 	private static final int SECONDS_IN_DAY = 86400;
 
+	private static ContactMessageManager instance; // Singleton
+
 	private byte[] currentSK;
 	private byte[] currentMsg;
 	private long currentMsgIntervalN;
 
-	public ContactMessageManager() throws NoSuchAlgorithmException {
-		updateCurrentSK();
+	private ContactMessageManager(Context context) throws NoSuchAlgorithmException, DatabaseInsertionFailedException {
+		updateCurrentSK(context);
+	}
+
+	public static ContactMessageManager getInstance(Context context)
+			throws NoSuchAlgorithmException, DatabaseInsertionFailedException {
+		if (instance == null) {
+			instance = new ContactMessageManager(context);
+		}
+		return instance;
 	}
 
 	private long getEpochTime() {
@@ -32,26 +45,26 @@ public class ContactMessageManager {
 		return getEpochTime()/SECONDS_IN_DAY;
 	}
 
-	private void updateCurrentSK() throws NoSuchAlgorithmException {
+	private void updateCurrentSK(Context context) throws NoSuchAlgorithmException, DatabaseInsertionFailedException {
 		long epochdayToday = getEpochDay();
-		byte[] sk;
-
-		try {   // Try to get TODAY's SK from database
-			sk = getSK(epochdayToday);
-			currentSK = sk;
+		// Try to get TODAY's SK from database
+		try {
+			currentSK = getSK(context, epochdayToday);
+			storeSK(context, epochdayToday, currentSK);
 			return;
 		}
 		catch (NotFoundInDatabaseException ignored) { /* Just continue */ }
-
-		try {   // Try to get YESTERDAY's SK from database and generate a new one for today
-			sk = getSK(epochdayToday-1);
-			currentSK = generateNewSK(sk);
+		// Try to get YESTERDAY's SK from database and generate a new one for today
+		try {
+			byte[] yesterdaySK = getSK(context, epochdayToday-1);
+			currentSK = generateNewSK(yesterdaySK);
+			storeSK(context, epochdayToday, currentSK);
 			return;
 		}
 		catch (NotFoundInDatabaseException | NoSuchAlgorithmException ignored) { /* Just continue */ }
-
 		// Generate a new SK from scratch
 		currentSK = generateNewSK();
+		storeSK(context, epochdayToday, currentSK);
 	}
 
 	private void updateCurrentMsg() throws NoSuchAlgorithmException, IOException {
@@ -85,9 +98,16 @@ public class ContactMessageManager {
 		return digest.digest(prevSK);
 	}
 
-	public byte[] getSK(long epochday) throws NotFoundInDatabaseException {
-		//TODO: Access database to search for SK associated with epochday, throw exception if not found.
-		byte[] foundSK = new byte[256];
-		return foundSK;
+	public void storeSK(Context context, long epochDay, byte[] sk) throws DatabaseInsertionFailedException {
+		DatabaseHelper dbHelper = new DatabaseHelper(context);
+		boolean success = dbHelper.insertSK(epochDay, sk);
+		if (!success) {
+			throw new DatabaseInsertionFailedException();
+		}
+	}
+
+	public byte[] getSK(Context context, long epochday) throws NotFoundInDatabaseException {
+		DatabaseHelper dbHelper = new DatabaseHelper(context);
+		return dbHelper.getSK(epochday);
 	}
 }

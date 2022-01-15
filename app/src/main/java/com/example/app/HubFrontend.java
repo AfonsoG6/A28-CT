@@ -26,7 +26,7 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 public class HubFrontend {
-	private static HubFrontend instance; // HubFrontend is a singleton
+	private static HubFrontend instance; // Singleton
 	private final SSLSocketFactory sslSocketFactory;
 
 	private HubFrontend(Context context) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException,
