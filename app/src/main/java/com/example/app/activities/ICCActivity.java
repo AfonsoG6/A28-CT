@@ -39,7 +39,6 @@ public class ICCActivity extends AppCompatActivity {
 		statusTextView.setTextColor(getResources().getColor(R.color.white, getTheme()));
 		statusTextView.setText("Sending Infection Claim...");
 		statusTextView.setVisibility(View.VISIBLE);
-		// TODO: Dont Allow invalid characters in iccTextBox (probably not in this function tho)
 		String icc = iccTextBox.getText().toString().trim().replace("-", "");
 		List<Hub.SKEpochDayPair> sksTEMPORARY = new ArrayList<>(); // FIXME: TEMPORARY
 		try {
