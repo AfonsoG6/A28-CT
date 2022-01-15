@@ -31,6 +31,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	}
 
+	public void deleteSKsBefore(long epochDay) {
+		SQLiteDatabase db = this.getWritableDatabase();
+		String stmt = "DELETE FROM " + TABLE_SKS + " WHERE " + COLUMN_EPOCH_DAY + " < ?";
+		String[] args = {String.valueOf(epochDay)};
+		db.execSQL(stmt, args);
+	}
+
 	public boolean insertSK(long epochDay, byte[] sk) {
 		SQLiteDatabase db = this.getWritableDatabase();
 		ContentValues cv = new ContentValues();
@@ -42,7 +49,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	}
 
 	public byte[] getSK(long epochDay) throws NotFoundInDatabaseException {
-		SQLiteDatabase db = this.getWritableDatabase();
+		SQLiteDatabase db = this.getReadableDatabase();
 
 		String stmt = "SELECT " + COLUMN_SK + " FROM " + TABLE_SKS + " WHERE " + COLUMN_EPOCH_DAY + " = ?";
 		String[] args = {String.valueOf(epochDay)};

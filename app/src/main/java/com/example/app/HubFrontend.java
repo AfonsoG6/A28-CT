@@ -1,10 +1,11 @@
 package com.example.app;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
-import com.example.hub.grpc.Hub.*;
+import com.example.hub.grpc.Hub.ClaimInfectionRequest;
+import com.example.hub.grpc.Hub.PingRequest;
+import com.example.hub.grpc.Hub.PingResponse;
+import com.example.hub.grpc.Hub.SKEpochDayPair;
 import com.example.hub.grpc.HubServiceGrpc;
-import com.squareup.okhttp.internal.framed.Ping;
 import io.grpc.ManagedChannel;
 import io.grpc.StatusRuntimeException;
 import io.grpc.okhttp.OkHttpChannelBuilder;
@@ -22,7 +23,6 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 public class HubFrontend {
@@ -83,7 +83,7 @@ public class HubFrontend {
 		return response != null && !response.getContent().isEmpty();
 	}
 
-	public void claimInfection(boolean isDummy, String icc, List<SKEpochDayPair> sks) {
+	public void claimInfection(boolean isDummy, String icc, List<SKEpochDayPair> sks) throws StatusRuntimeException {
 		ManagedChannel channel = buildChannel();
 		HubServiceGrpc.HubServiceBlockingStub stub = HubServiceGrpc.newBlockingStub(channel);
 		ClaimInfectionRequest request = ClaimInfectionRequest.newBuilder()
@@ -95,7 +95,7 @@ public class HubFrontend {
 		channel.shutdown();
 	}
 
-	public void sendDummyClaimInfection() throws NoSuchAlgorithmException {
+	public void sendDummyClaimInfection() throws NoSuchAlgorithmException, StatusRuntimeException {
 		SecureRandom random = SecureRandom.getInstanceStrong();
 		byte[] dummyIccBytes = new byte[40];
 		random.nextBytes(dummyIccBytes);
