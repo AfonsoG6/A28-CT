@@ -13,7 +13,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Calendar;
 
-public class OutgoingMessageManager {
+public class OutgoingMsgManager {
 	private static final int SECONDS_TO_UPDATE_MSG = 300; // 5min = 5*60s
 	private static final int SECONDS_IN_DAY = 86400;
 	private static final int SK_DELETED_AFTER_DAYS = 14;
@@ -23,7 +23,7 @@ public class OutgoingMessageManager {
 	private byte[] currentMsg;
 	private long currentMsgIntervalN;
 
-	public OutgoingMessageManager(Context context) throws NoSuchAlgorithmException, DatabaseInsertionFailedException {
+	public OutgoingMsgManager(Context context) throws NoSuchAlgorithmException, DatabaseInsertionFailedException {
 		updateCurrentSK(context);
 	}
 
@@ -37,7 +37,7 @@ public class OutgoingMessageManager {
 
 	private byte[] generateNewSK() throws NoSuchAlgorithmException {
 		SecureRandom random = SecureRandom.getInstanceStrong();
-		byte[] newSK = new byte[256];
+		byte[] newSK = new byte[32]; // 256 bits = 32 bytes
 		random.nextBytes(newSK);
 		return newSK;
 	}
@@ -48,22 +48,24 @@ public class OutgoingMessageManager {
 	}
 
 	public byte[] getSK(Context context, long epochday) throws NotFoundInDatabaseException {
-		DatabaseHelper dbHelper = new DatabaseHelper(context);
-		return dbHelper.getSK(epochday);
+		try (DatabaseHelper dbHelper = new DatabaseHelper(context)) {
+			return dbHelper.getSK(epochday);
+		}
 	}
 
 	public void storeSK(Context context, long epochDay, byte[] sk) throws DatabaseInsertionFailedException {
-		DatabaseHelper dbHelper = new DatabaseHelper(context);
-		boolean success = dbHelper.insertSK(epochDay, sk);
-		if (!success) {
-			throw new DatabaseInsertionFailedException();
+		boolean success;
+		try (DatabaseHelper dbHelper = new DatabaseHelper(context)) {
+			success = dbHelper.insertSK(epochDay, sk);
 		}
+		if (!success) throw new DatabaseInsertionFailedException();
 	}
 
 	public void cleanOldSKs(Context context) {
 		long epochDay = getEpochDay();
-		DatabaseHelper dbHelper = new DatabaseHelper(context);
-		dbHelper.deleteSKsBefore(epochDay-SK_DELETED_AFTER_DAYS);
+		try (DatabaseHelper dbHelper = new DatabaseHelper(context)) {
+			dbHelper.deleteSKsBefore(epochDay - SK_DELETED_AFTER_DAYS);
+		}
 	}
 
 	private void updateCurrentSK(Context context) throws NoSuchAlgorithmException, DatabaseInsertionFailedException {
@@ -96,8 +98,8 @@ public class OutgoingMessageManager {
 		long epochTime = getEpochTime();
 		long epochDay = getEpochDay();
 
-		// Calculate at which interval of the day we're currently at and check if already using the correct Msg.
-		long intervalN = (epochTime - epochDay)/SECONDS_TO_UPDATE_MSG;
+		// Calculate the time interval that we're currently at and check if already using the correct Msg.
+		long intervalN = epochTime/SECONDS_TO_UPDATE_MSG;
 		if (epochDay == currentSKEpochDay && intervalN == currentMsgIntervalN) return; // currentMsg is up-to-date
 
 		if (epochDay != currentSKEpochDay) updateCurrentSK(context);
@@ -111,6 +113,12 @@ public class OutgoingMessageManager {
 		MessageDigest digest = MessageDigest.getInstance("SHA-256");
 		currentMsg = digest.digest(toHash);
 		currentMsgIntervalN = intervalN;
+	}
+
+	public void sendContactMsg(Context context)
+			throws DatabaseInsertionFailedException, NoSuchAlgorithmException, IOException {
+		updateCurrentMsg(context);
+		//TODO: Use Bluetooth LE to send currentMsg and ?currentMsgIntervalN?
 	}
 
 }

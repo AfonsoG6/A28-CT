@@ -6,26 +6,29 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.SystemClock;
-import com.example.app.OutgoingMessageManager;
+import com.example.app.ContactTracingService;
+import com.example.app.OutgoingMsgManager;
+import com.example.app.exceptions.DatabaseInsertionFailedException;
+
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 
 public class SendContactMsgAlarm extends BroadcastReceiver {
-
 	public static final long INTERVAL = 2*AlarmManager.INTERVAL_FIFTEEN_MINUTES/15;
 
-	private final OutgoingMessageManager outMsgManager;
-
-	public SendContactMsgAlarm(Context context, OutgoingMessageManager msgManager) {
-		outMsgManager = msgManager;
-
-		setAlarm(context);
-	}
+	public SendContactMsgAlarm() {}
 
 	@Override
 	public void onReceive(Context context, Intent intent) {
-		//TODO Use msgManager to send contact msg
+		try {
+			OutgoingMsgManager outMsgManager = context.getSystemService(ContactTracingService.class).getOutgoingMsgManager();
+			outMsgManager.sendContactMsg(context);
+		} catch (DatabaseInsertionFailedException | NoSuchAlgorithmException | IOException e) {
+			e.printStackTrace();
+		}
 	}
 
-	private void setAlarm(Context context) {
+	public static void setAlarm(Context context) {
 		Intent intent = new Intent(context, SendContactMsgAlarm.class);
 		PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
 		AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);

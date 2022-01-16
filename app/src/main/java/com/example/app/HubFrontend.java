@@ -6,6 +6,7 @@ import com.example.hub.grpc.Hub.PingRequest;
 import com.example.hub.grpc.Hub.PingResponse;
 import com.example.hub.grpc.Hub.SKEpochDayPair;
 import com.example.hub.grpc.HubServiceGrpc;
+import com.google.protobuf.ByteString;
 import io.grpc.ManagedChannel;
 import io.grpc.StatusRuntimeException;
 import io.grpc.okhttp.OkHttpChannelBuilder;
@@ -17,6 +18,7 @@ import javax.net.ssl.TrustManagerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.charset.spi.CharsetProvider;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -97,23 +99,34 @@ public class HubFrontend {
 
 	public void sendDummyClaimInfection() throws NoSuchAlgorithmException, StatusRuntimeException {
 		SecureRandom random = SecureRandom.getInstanceStrong();
-		byte[] dummyIccBytes = new byte[40];
-		random.nextBytes(dummyIccBytes);
-		String dummyIcc = new String(dummyIccBytes, StandardCharsets.US_ASCII);
+		String dummyIcc = generateDummyIcc();
 		List<SKEpochDayPair> dummySks = new ArrayList<>();
 		for (int i=0; i<14; i++) {
 			long dummyEpochDay = random.nextLong();
-			byte[] dummySkBytes = new byte[512];
-			random.nextBytes(dummySkBytes);
-			String dummySk = new String(dummySkBytes, StandardCharsets.US_ASCII);
-			SKEpochDayPair e = SKEpochDayPair.newBuilder().setEpochDay(dummyEpochDay).setSk(dummySk).build();
-			dummySks.add(e);
+			byte[] dummySk = new byte[256];
+			random.nextBytes(dummySk);
+			SKEpochDayPair pair = SKEpochDayPair.newBuilder()
+					.setEpochDay(dummyEpochDay)
+					.setSk(ByteString.copyFrom(dummySk))
+					.build();
+			dummySks.add(pair);
 		}
 		claimInfection(true, dummyIcc, dummySks);
 	}
 
-	public void queryInfectedSKs() {
+	private String generateDummyIcc() throws NoSuchAlgorithmException {
+		SecureRandom random = SecureRandom.getInstanceStrong();
+		char[] charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".toCharArray();
+		char[] dummyIcc = new char[20];
+		for (int i=0; i<dummyIcc.length; i++) {
+			int idx = random.nextInt(charset.length);
+			dummyIcc[i] = charset[idx];
+		}
+		return new String(dummyIcc);
+	}
 
+	public void queryInfectedSKs() {
+		//TODO: Implement
 	}
 
 }

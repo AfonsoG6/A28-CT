@@ -5,6 +5,7 @@ import android.text.*;
 import java.util.regex.Pattern;
 
 public class ICCInputFilter implements InputFilter {
+
 	private static final Pattern allowedCharsPattern = Pattern.compile("[a-zA-Z0-9]");
 
 	@Override

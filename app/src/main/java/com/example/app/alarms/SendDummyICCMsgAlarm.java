@@ -16,11 +16,9 @@ import java.security.cert.CertificateException;
 import java.util.Random;
 
 public class SendDummyICCMsgAlarm extends BroadcastReceiver {
-	private final Random random = new Random();
+	private static final Random random = new Random();
 
-	public SendDummyICCMsgAlarm(Context context) {
-		setAlarm(context);
-	}
+	public SendDummyICCMsgAlarm() {}
 
 	@Override
 	public void onReceive(Context context, Intent intent) {
@@ -34,7 +32,7 @@ public class SendDummyICCMsgAlarm extends BroadcastReceiver {
 		setAlarm(context);
 	}
 
-	private void setAlarm(Context context) {
+	public static void setAlarm(Context context) {
 		Intent intent = new Intent(context, SendContactMsgAlarm.class);
 		PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
 		AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
@@ -44,7 +42,7 @@ public class SendDummyICCMsgAlarm extends BroadcastReceiver {
 		);
 	}
 
-	private long getRandomInterval() {
+	private static long getRandomInterval() {
 		// We are using a simple mathematical function to make small intervals less likely while still keeping them possible.
 		double exp = random.nextDouble() * 4.6; // Random Value between 0 and 4.6
 		return Math.round((24-Math.pow(2, exp))*AlarmManager.INTERVAL_HOUR);

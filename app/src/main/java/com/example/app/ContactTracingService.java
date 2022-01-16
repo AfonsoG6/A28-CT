@@ -12,15 +12,15 @@ import com.example.app.exceptions.DatabaseInsertionFailedException;
 import java.security.NoSuchAlgorithmException;
 
 public class ContactTracingService extends Service {
-	private OutgoingMessageManager outMsgManager;
-	private IncomingMessageManager inMsgManager;
+	private OutgoingMsgManager outMsgManager;
+	private IncomingMsgManager inMsgManager;
 
 	@Override
 	public void onCreate() {
 		super.onCreate();
 		try {
-			outMsgManager = new OutgoingMessageManager(getApplicationContext());
-			inMsgManager = new IncomingMessageManager();
+			outMsgManager = new OutgoingMsgManager(getApplicationContext());
+			inMsgManager = new IncomingMsgManager();
 		}
 		catch (NoSuchAlgorithmException | DatabaseInsertionFailedException e) {
 			e.printStackTrace();
@@ -40,8 +40,17 @@ public class ContactTracingService extends Service {
 	}
 
 	private void setAlarms() {
-		new QueryInfectedSKsAlarm(this, inMsgManager);
-		new SendContactMsgAlarm(this, outMsgManager);
-		new SendDummyICCMsgAlarm(this);
+		QueryInfectedSKsAlarm.setAlarm(this);
+		SendContactMsgAlarm.setAlarm(this);
+		SendDummyICCMsgAlarm.setAlarm(this);
 	}
+
+	public IncomingMsgManager getIncomingMsgManager() {
+		return inMsgManager;
+	}
+
+	public OutgoingMsgManager getOutgoingMsgManager() {
+		return outMsgManager;
+	}
+
 }
