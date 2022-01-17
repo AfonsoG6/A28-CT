@@ -12,13 +12,19 @@ import java.sql.SQLException;
 import java.util.Random;
 
 public class ICCManager {
+	public static final int ICC_LENGTH = 20;
+
 	private ICCManager() {}
 
 	public static String generateICC() throws NoSuchAlgorithmException {
-		byte[] array = new byte[40]; // Java stores strings using 2 bytes per char, and we want a 20 char string
-		Random random = SecureRandom.getInstanceStrong(); // SecureRandom is preferred to Random
-		random.nextBytes(array);
-		return new String(array, StandardCharsets.US_ASCII);
+		SecureRandom random = SecureRandom.getInstanceStrong();
+		char[] charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".toCharArray();
+		char[] icc = new char[ICC_LENGTH];
+		for (int i=0; i<icc.length; i++) {
+			int idx = random.nextInt(charset.length);
+			icc[i] = charset[idx];
+		}
+		return new String(icc);
 	}
 
 	public static void insertICC(String icc) {

@@ -6,8 +6,8 @@ package com.example.hub.grpc;
 message Empty {}
 
 message SKEpochDayPair {
-  int32 epochDay = 1;
-  string sk = 2;
+  int64 epochDay = 1;
+  bytes sk = 2;
 }
 
 // Ping
