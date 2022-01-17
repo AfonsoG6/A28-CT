@@ -1,9 +1,14 @@
 package com.example.app;
 
 import android.content.Context;
-import com.example.hub.grpc.Hub;
+import com.example.hub.grpc.Hub.ClaimInfectionRequest;
+import com.example.hub.grpc.Hub.PingRequest;
+import com.example.hub.grpc.Hub.PingResponse;
+import com.example.hub.grpc.Hub.SKEpochDayPair;
 import com.example.hub.grpc.HubServiceGrpc;
+import com.google.protobuf.ByteString;
 import io.grpc.ManagedChannel;
+import io.grpc.StatusRuntimeException;
 import io.grpc.okhttp.OkHttpChannelBuilder;
 import org.conscrypt.Conscrypt;
 
@@ -12,14 +17,18 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.charset.spi.CharsetProvider;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class HubFrontend {
-	private static HubFrontend instance; // HubFrontend is a singleton
+	private static HubFrontend instance; // Singleton
 	private final SSLSocketFactory sslSocketFactory;
 
 	private HubFrontend(Context context) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException,
@@ -62,13 +71,62 @@ public class HubFrontend {
 				.build();
 	}
 
-	public String ping(String content) {
+	public boolean ping(String content) {
 		ManagedChannel channel = buildChannel();
 		HubServiceGrpc.HubServiceBlockingStub stub = HubServiceGrpc.newBlockingStub(channel);
-		Hub.PingRequest pingRequest = Hub.PingRequest.newBuilder().setContent(content).build();
-		Hub.PingResponse pingResponse = stub.withDeadlineAfter(5, TimeUnit.SECONDS).ping(pingRequest);
+		PingRequest request = PingRequest.newBuilder().setContent(content).build();
+		PingResponse response;
+		try {
+			response = stub.withDeadlineAfter(5, TimeUnit.SECONDS).ping(request);
+		}
+		catch (StatusRuntimeException e) { return false; }
+		finally { channel.shutdown(); }
+
+		return response != null && !response.getContent().isEmpty();
+	}
+
+	public void claimInfection(boolean isDummy, String icc, List<SKEpochDayPair> sks) throws StatusRuntimeException {
+		ManagedChannel channel = buildChannel();
+		HubServiceGrpc.HubServiceBlockingStub stub = HubServiceGrpc.newBlockingStub(channel);
+		ClaimInfectionRequest request = ClaimInfectionRequest.newBuilder()
+				.setIsDummy(isDummy)
+				.setIcc(icc)
+				.addAllSks(sks)
+				.build();
+		stub.withDeadlineAfter(5, TimeUnit.SECONDS).claimInfection(request);
 		channel.shutdown();
-		return pingResponse.getContent();
+	}
+
+	public void sendDummyClaimInfection() throws NoSuchAlgorithmException, StatusRuntimeException {
+		SecureRandom random = SecureRandom.getInstanceStrong();
+		String dummyIcc = generateDummyIcc();
+		List<SKEpochDayPair> dummySks = new ArrayList<>();
+		for (int i=0; i<14; i++) {
+			long dummyEpochDay = random.nextLong();
+			byte[] dummySk = new byte[256];
+			random.nextBytes(dummySk);
+			SKEpochDayPair pair = SKEpochDayPair.newBuilder()
+					.setEpochDay(dummyEpochDay)
+					.setSk(ByteString.copyFrom(dummySk))
+					.build();
+			dummySks.add(pair);
+		}
+		claimInfection(true, dummyIcc, dummySks);
+	}
+
+	private String generateDummyIcc() throws NoSuchAlgorithmException {
+		SecureRandom random = SecureRandom.getInstanceStrong();
+		char[] charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".toCharArray();
+		char[] dummyIcc = new char[20];
+		for (int i=0; i<dummyIcc.length; i++) {
+			int idx = random.nextInt(charset.length);
+			dummyIcc[i] = charset[idx];
+		}
+		return new String(dummyIcc);
+	}
+
+	public void queryInfectedSKs() {
+		//TODO: Implement
 	}
 
 }

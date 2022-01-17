@@ -1,6 +1,6 @@
-DROP TABLE usable_iccs CASCADE;
-DROP TABLE infected_sks CASCADE;
-DROP TABLE health_services CASCADE;
+DROP TABLE IF EXISTS usable_iccs CASCADE;
+DROP TABLE IF EXISTS infected_sks CASCADE;
+DROP TABLE IF EXISTS health_services CASCADE;
 
 
 CREATE TABLE usable_iccs (
@@ -11,7 +11,7 @@ CREATE TABLE usable_iccs (
 -- and only send him SKs with newer/higher ins_epochtime
 CREATE TABLE infected_sks (
     epoch_day INT NOT NULL, -- epochtime day (epochtime/86400) associated to SK (SK was used by client during this day)
-    sk VARCHAR(256) NOT NULL,
+    sk BYTEA NOT NULL,
     ins_epoch INT NOT NULL, -- epochtime of insertion
     PRIMARY KEY (epoch_day, sk)
 );

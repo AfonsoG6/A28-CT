@@ -2,6 +2,7 @@ package com.example.hub.models;
 
 import com.example.hub.database.PostgreSQLJDBC;
 import com.example.hub.grpc.Hub.*;
+import com.google.protobuf.ByteString;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -17,7 +18,7 @@ public class InfectedSKManager {
 		try (PreparedStatement stmt = conn.prepareStatement(stmtString)) {
 			for (SKEpochDayPair pair: sks){
 				stmt.setLong(1, pair.getEpochDay());
-				stmt.setString(2, pair.getSk());
+				stmt.setBytes(2, pair.getSk().toByteArray());
 				stmt.addBatch();
 				stmt.executeBatch();
 			}
@@ -37,8 +38,11 @@ public class InfectedSKManager {
 		ArrayList<SKEpochDayPair> infectedSKs = new ArrayList<>();
 		while (rs.next()) {
 			int epochDay = rs.getInt("epoch_day");
-			String sk = rs.getString("sk");
-			SKEpochDayPair pair = SKEpochDayPair.newBuilder().setEpochDay(epochDay).setSk(sk).build();
+			byte[] sk = rs.getBytes("sk");
+			SKEpochDayPair pair = SKEpochDayPair.newBuilder()
+					.setEpochDay(epochDay)
+					.setSk(ByteString.copyFrom(sk))
+					.build();
 			infectedSKs.add(pair);
 		}
 		return infectedSKs;

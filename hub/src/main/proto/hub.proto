@@ -7,7 +7,7 @@ message Empty {}
 
 message SKEpochDayPair {
   int64 epochDay = 1;
-  string sk = 2;
+  bytes sk = 2;
 }
 
 // Ping
