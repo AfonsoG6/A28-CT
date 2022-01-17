@@ -4,20 +4,21 @@ import com.example.hub.database.PostgreSQLJDBC;
 import com.example.hub.grpc.Hub.*;
 
 import java.sql.*;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
 public class InfectedSKManager {
-	private InfectedSKManager() {}
-
 	public static void insertSKs(List<SKEpochDayPair> sks) throws SQLException {
 		Connection conn = PostgreSQLJDBC.getConnection();
 		String stmtString = "INSERT INTO infected_sks (epoch_day, sk, ins_epoch) VALUES (?, ?, ?);";
+		long epoch = Instant.now().toEpochMilli();
 
 		try (PreparedStatement stmt = conn.prepareStatement(stmtString)) {
 			for (SKEpochDayPair pair: sks){
-				stmt.setLong(1, pair.getEpochDay());
+				stmt.setInt(1, pair.getEpochDay());
 				stmt.setString(2, pair.getSk());
+				stmt.setLong(3, epoch);
 				stmt.addBatch();
 				stmt.executeBatch();
 			}
@@ -42,5 +43,16 @@ public class InfectedSKManager {
 			infectedSKs.add(pair);
 		}
 		return infectedSKs;
+	}
+
+	public static long queryMaxInsEpoch() throws SQLException {
+		Connection conn = PostgreSQLJDBC.getConnection();
+		String stmtString = "SELECT MAX(ins_epoch) FROM infected_sks;";
+
+		PreparedStatement stmt = conn.prepareStatement(stmtString);
+		ResultSet rs = stmt.executeQuery();
+		if (!rs.next()) return 0;
+
+		return rs.getInt(1);
 	}
 }

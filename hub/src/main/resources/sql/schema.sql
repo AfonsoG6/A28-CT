@@ -12,7 +12,7 @@ CREATE TABLE usable_iccs (
 CREATE TABLE infected_sks (
     epoch_day INT NOT NULL, -- epochtime day (epochtime/86400) associated to SK (SK was used by client during this day)
     sk VARCHAR(256) NOT NULL,
-    ins_epoch INT NOT NULL, -- epochtime of insertion
+    ins_epoch BIGINT NOT NULL, -- epochtime of insertion
     PRIMARY KEY (epoch_day, sk)
 );
 

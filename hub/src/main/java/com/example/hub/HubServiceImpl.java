@@ -4,10 +4,13 @@ import com.example.hub.grpc.Hub.*;
 import com.example.hub.grpc.HubServiceGrpc;
 import com.example.hub.models.HealthServiceManager;
 import com.example.hub.models.ICCManager;
+import com.example.hub.models.InfectedSKManager;
 import io.grpc.Context;
 import io.grpc.stub.StreamObserver;
 
 import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
+import java.util.List;
 
 import static io.grpc.Status.*;
 
@@ -83,16 +86,21 @@ public class HubServiceImpl extends HubServiceGrpc.HubServiceImplBase {
 		boolean isValid = ICCManager.existsICC(request.getIcc());
 		if (!isValid) {
 			responseObserver.onError(
-					NOT_FOUND.withDescription("Icc does not exist").asRuntimeException()
+					INVALID_ARGUMENT.withDescription("Icc is not valid").asRuntimeException()
 			);
 			return;
 		}
 		ICCManager.deleteICC(request.getIcc());
+		try {
+			InfectedSKManager.insertSKs(request.getSksList());
+			responseObserver.onNext(response);
+			responseObserver.onCompleted();
+		} catch (SQLException e) {
+			responseObserver.onError(
+					INTERNAL.withDescription("Something went wrong").asRuntimeException()
+			);
+		}
 
-		// TODO: Add SKs to database
-
-		responseObserver.onNext(response);
-		responseObserver.onCompleted();
 	}
 
 	@Override
@@ -103,10 +111,20 @@ public class HubServiceImpl extends HubServiceGrpc.HubServiceImplBase {
 			responseObserver.onError(DEADLINE_EXCEEDED.withDescription("Deadline exceeded").asRuntimeException());
 			return;
 		}
-		QueryInfectedSKsResponse.Builder builder = QueryInfectedSKsResponse.newBuilder();
 
-		QueryInfectedSKsResponse response = builder.build();
-		responseObserver.onNext(response);
-		responseObserver.onCompleted();
+		try {
+			long maxInsEpoch = InfectedSKManager.queryMaxInsEpoch();
+			List<SKEpochDayPair> sks = InfectedSKManager.queryInfectedSKs(request.getLastQueryEpoch());
+			QueryInfectedSKsResponse response = QueryInfectedSKsResponse.newBuilder()
+					.addAllSks(sks)
+					.setQueryEpoch(maxInsEpoch)
+					.build();
+			responseObserver.onNext(response);
+			responseObserver.onCompleted();
+		} catch (SQLException e) {
+			responseObserver.onError(
+					INTERNAL.withDescription("Something went wrong").asRuntimeException()
+			);
+		}
 	}
 }

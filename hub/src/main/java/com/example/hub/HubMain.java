@@ -4,7 +4,7 @@ import com.example.hub.database.PostgreSQLJDBC;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 
-import java.io.File;
+import java.io.InputStream;
 
 public class HubMain {
 
@@ -22,9 +22,9 @@ public class HubMain {
 	}
 
 	private static Server prepareServer(int port) throws Exception {
-		File certChainFile = HubResources.getCertChainFile();
-		File privateKeyFile = HubResources.getPrivateKeyFile();
-		if (!certChainFile.exists() || !privateKeyFile.exists()) {
+		InputStream certChainFile = HubResources.getCertChainFile();
+		InputStream privateKeyFile = HubResources.getPrivateKeyFile();
+		if (certChainFile == null || privateKeyFile == null) {
 			throw new Exception("Certificate or private key file not found"); // TODO Create dedicated exception
 		}
 
