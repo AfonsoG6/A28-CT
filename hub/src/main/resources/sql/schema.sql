@@ -1,6 +1,6 @@
-DROP TABLE usable_iccs CASCADE;
-DROP TABLE infected_sks CASCADE;
-DROP TABLE health_services CASCADE;
+DROP TABLE IF EXISTS usable_iccs CASCADE;
+DROP TABLE IF EXISTS infected_sks CASCADE;
+DROP TABLE IF EXISTS health_services CASCADE;
 
 
 CREATE TABLE usable_iccs (
