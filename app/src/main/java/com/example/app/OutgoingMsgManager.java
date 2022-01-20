@@ -1,6 +1,10 @@
 package com.example.app;
 
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
+import com.example.app.bluetooth.BleMessage;
+import com.example.app.bluetooth.BleScanner;
+import com.example.app.bluetooth.ContactServer;
 import com.example.app.database.DatabaseHelper;
 import com.example.app.exceptions.DatabaseInsertionFailedException;
 import com.example.app.exceptions.NotFoundInDatabaseException;
@@ -119,6 +123,25 @@ public class OutgoingMsgManager {
 			throws DatabaseInsertionFailedException, NoSuchAlgorithmException, IOException {
 		updateCurrentMsg(context);
 		//TODO: Use Bluetooth LE to send currentMsg and ?currentMsgIntervalN?
+		byte[] message = new BleMessage(this.currentMsg, this.currentMsgIntervalN).toByteArray();
+		new Thread() {
+			@Override
+			public void run() {
+				super.run();
+				try {
+					BleScanner scanner = new BleScanner(BluetoothAdapter.getDefaultAdapter());
+					scanner.startScan();
+					sleep(BleScanner.SCAN_PERIOD);
+					scanner.stopScan();
+					ContactServer.connectDevices(context, scanner.getScanResults());
+					sleep(1000);
+					ContactServer.sendMessage(message);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		};
+		ContactServer.connectDevices(context, null);
 	}
 
 }

@@ -61,4 +61,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			throw new NotFoundInDatabaseException();
 		}
 	}
+
+	public boolean insertRecvdMessage(byte[] message, long intervalN) {
+		SQLiteDatabase db = this.getWritableDatabase();
+		ContentValues cv = new ContentValues();
+		cv.put("msg", message);
+		cv.put("interval_n", intervalN);
+		long insert = db.insert("recvd_msgs", null, cv);
+		return insert >= 0;
+	}
 }
