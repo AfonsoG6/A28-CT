@@ -102,7 +102,7 @@ public class HubFrontend {
 		String dummyIcc = generateDummyIcc();
 		List<SKEpochDayPair> dummySks = new ArrayList<>();
 		for (int i=0; i<14; i++) {
-			long dummyEpochDay = random.nextLong();
+			int dummyEpochDay = random.nextInt();
 			byte[] dummySk = new byte[256];
 			random.nextBytes(dummySk);
 			SKEpochDayPair pair = SKEpochDayPair.newBuilder()

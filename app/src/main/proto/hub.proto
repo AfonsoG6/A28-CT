@@ -6,7 +6,7 @@ package com.example.hub.grpc;
 message Empty {}
 
 message SKEpochDayPair {
-  int64 epochDay = 1;
+  int32 epochDay = 1;
   bytes sk = 2;
 }
 

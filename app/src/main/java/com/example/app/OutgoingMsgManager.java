@@ -1,6 +1,7 @@
 package com.example.app;
 
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import com.example.app.bluetooth.BleMessage;
 import com.example.app.bluetooth.BleScanner;
@@ -129,7 +130,9 @@ public class OutgoingMsgManager {
 			public void run() {
 				super.run();
 				try {
-					BleScanner scanner = new BleScanner(BluetoothAdapter.getDefaultAdapter());
+					BluetoothAdapter adapter = ((BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE))
+							.getAdapter();
+					BleScanner scanner = new BleScanner(adapter);
 					scanner.startScan();
 					sleep(BleScanner.SCAN_PERIOD);
 					scanner.stopScan();
