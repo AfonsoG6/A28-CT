@@ -14,6 +14,9 @@ import java.util.Base64;
 
 public class HealthServiceManager {
 
+    private static final String SALT = "Y%/DdSs&d4$5";
+    private static final int SALT_ITERATIONS = 10;
+
     public static boolean registerHealthService(@NotNull String email, @NotNull String password)
             throws NoSuchAlgorithmException {
         String hashedPassword = hashPassword(password);
@@ -49,10 +52,17 @@ public class HealthServiceManager {
     }
 
     private static String hashPassword(@NotNull String password) throws NoSuchAlgorithmException {
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte[] encodedHash = digest.digest(
-                password.getBytes(StandardCharsets.UTF_8)
-        );
-        return Base64.getEncoder().encodeToString(encodedHash);
+        String passwordLen = String.valueOf(password.length());
+        String saltedPassword = password;
+
+        for (int i = 0; i < SALT_ITERATIONS; i++) {
+            saltedPassword = passwordLen + SALT + password + passwordLen;
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] encodedHash = digest.digest(
+                    saltedPassword.getBytes(StandardCharsets.UTF_8)
+            );
+            saltedPassword = Base64.getEncoder().encodeToString(encodedHash);
+        }
+        return saltedPassword;
     }
 }
