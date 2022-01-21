@@ -16,12 +16,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 
 	@Override
-	public void onCreate(SQLiteDatabase sqLiteDatabase) {
-		String stmt = "CREATE TABLE sks (epoch_day INTEGER PRIMARY KEY NOT NULL, sk BLOB NOT NULL);";
-		stmt += "CREATE TABLE recvd_msgs (interval_n INTEGER NOT NULL, msg BLOB NOT NULL, PRIMARY KEY (interval_n, msg));";
-		//TODO: Add Creation of Location Table too
-		SQLiteDatabase db = this.getWritableDatabase();
+	public void onCreate(SQLiteDatabase db) {
+		String stmt = "CREATE TABLE IF NOT EXISTS sks (epoch_day INTEGER PRIMARY KEY NOT NULL, sk BLOB NOT NULL);";
 		db.execSQL(stmt);
+		stmt += "CREATE TABLE IF NOT EXISTS recvd_msgs (interval_n INTEGER NOT NULL, msg BLOB NOT NULL, PRIMARY KEY (interval_n, msg));";
+		db.execSQL(stmt);
+		//TODO: Add Creation of Location Table too
 	}
 
 	@Override

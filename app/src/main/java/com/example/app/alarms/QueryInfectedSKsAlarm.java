@@ -6,23 +6,39 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.SystemClock;
+import android.util.Log;
+import android.widget.Toast;
+import com.example.app.ContactTracingService;
+
+import java.util.Calendar;
 
 public class QueryInfectedSKsAlarm extends BroadcastReceiver {
 	public static final long INTERVAL = 4 * AlarmManager.INTERVAL_HOUR;
 
-	public QueryInfectedSKsAlarm() {}
+	ContactTracingService service;
+
+	public QueryInfectedSKsAlarm() { /* Empty */ }
+
+	public QueryInfectedSKsAlarm(ContactTracingService service) {
+		this.service = service;
+	}
 
 	@Override
 	public void onReceive(Context context, Intent intent) {
+		Log.i("QueryInfectedSKsAlarm", "onReceive");
+		Toast.makeText(context, "QueryInfectedSKsAlarm", Toast.LENGTH_LONG).show();
 		//TODO use inMsgManager to query Infected SKs and check the database for matching msgs
 	}
 
-	public static void setAlarm(Context context) {
+	public void setAlarm(Context context) {
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTimeInMillis(System.currentTimeMillis());
+
 		Intent intent = new Intent(context, QueryInfectedSKsAlarm.class);
-		PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
+		PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
 		AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-		alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME,
-				SystemClock.elapsedRealtime() + AlarmManager.INTERVAL_FIFTEEN_MINUTES,
+		alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP,
+				calendar.getTimeInMillis(),
 				INTERVAL,
 				pendingIntent
 		);
