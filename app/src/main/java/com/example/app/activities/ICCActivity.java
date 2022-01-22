@@ -8,6 +8,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.app.HubFrontend;
 import com.example.app.R;
+import com.example.app.activities.utils.ICCInputFilter;
 import com.example.hub.grpc.Hub;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;

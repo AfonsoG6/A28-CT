@@ -6,9 +6,9 @@ import android.content.Context;
 import com.example.app.bluetooth.BleMessage;
 import com.example.app.bluetooth.BleScanner;
 import com.example.app.bluetooth.ContactServer;
-import com.example.app.database.DatabaseHelper;
 import com.example.app.exceptions.DatabaseInsertionFailedException;
 import com.example.app.exceptions.NotFoundInDatabaseException;
+import com.example.app.helpers.DatabaseHelper;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
