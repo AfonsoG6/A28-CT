@@ -2,7 +2,7 @@ package com.example.app;
 
 import android.content.Context;
 import com.example.app.bluetooth.BleMessage;
-import com.example.app.database.DatabaseHelper;
+import com.example.app.helpers.DatabaseHelper;
 
 public class IncomingMsgManager {
 	//TODO: Implement Receiving Contact Messages

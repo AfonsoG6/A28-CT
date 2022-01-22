@@ -1,4 +1,4 @@
-package com.example.app.database;
+package com.example.app.helpers;
 
 import android.content.ContentValues;
 import android.content.Context;
