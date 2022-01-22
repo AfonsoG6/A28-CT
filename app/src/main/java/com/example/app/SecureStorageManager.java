@@ -4,9 +4,16 @@ import android.content.Context;
 import com.example.app.exceptions.PasswordSetFailedException;
 import com.example.app.helpers.SharedPrefsHelper;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.security.*;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 
 public class SecureStorageManager {
@@ -17,14 +24,9 @@ public class SecureStorageManager {
 	private SecureRandom secureRandom;
 	private SharedPrefsHelper spHelper;
 
-	public SecureStorageManager(Context context) throws PasswordSetFailedException {
-		try {
-			secureRandom = SecureRandom.getInstanceStrong();
-			spHelper = new SharedPrefsHelper(context);
-		}
-		catch (NoSuchAlgorithmException e) {
-			throw new PasswordSetFailedException(e);
-		}
+	public SecureStorageManager(Context context) throws NoSuchAlgorithmException {
+		secureRandom = SecureRandom.getInstanceStrong();
+		spHelper = new SharedPrefsHelper(context);
 	}
 
 	public void setPassword(String password) throws PasswordSetFailedException {
@@ -37,8 +39,7 @@ public class SecureStorageManager {
 			spHelper.setCheckSalt(chkSalt);
 			spHelper.setObfuscationSalt(obfSalt);
 			spHelper.setCheckHash(chkHash);
-		}
-		catch (NoSuchAlgorithmException | IOException e) {
+		} catch (NoSuchAlgorithmException | IOException e) {
 			throw new PasswordSetFailedException(e);
 		}
 	}
@@ -62,20 +63,21 @@ public class SecureStorageManager {
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		os.write(obfHash);
 		byte[] extension = obfHash;
-		for (int i=0; i<(length/obfHash.length)-1; i++) {
+		for (int i = 0; i < (length / obfHash.length) - 1; i++) {
 			extension = hash(extension);
 			os.write(extension);
 		}
 		// Add the remaining amount of bytes
-		extension = Arrays.copyOfRange(hash(extension), 0, length%obfHash.length);
+		extension = Arrays.copyOfRange(hash(extension), 0, length % obfHash.length);
 		os.write(extension);
 		return os.toByteArray();
 	}
 
 	private byte[] obfuscate(byte[] privateKey, byte[] obfHash) throws PasswordSetFailedException {
-		if (obfHash.length != privateKey.length) throw new PasswordSetFailedException("Invalid Obfuscation Hash length (Expected "+privateKey.length+", got " + obfHash.length + ")");
+		if (obfHash.length != privateKey.length)
+			throw new PasswordSetFailedException("Invalid Obfuscation Hash length (Expected " + privateKey.length + ", got " + obfHash.length + ")");
 		byte[] result = new byte[privateKey.length];
-		for (int i=0; i<privateKey.length; i++) {
+		for (int i = 0; i < privateKey.length; i++) {
 			result[i] = (byte) (privateKey[i] ^ obfHash[i]);
 		}
 		return result;
@@ -102,5 +104,19 @@ public class SecureStorageManager {
 		return digest.digest(data);
 	}
 
+	public byte[] encryptValue(double value) {
+		try {
+			byte[] publicKeyBytes = spHelper.getPublicKey();
+			Cipher cipher = Cipher.getInstance("RSA/CBC/OAEP");
+			PublicKey publicKey = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(publicKeyBytes));
+			cipher.init(Cipher.ENCRYPT_MODE, publicKey);
+			byte[] valueBytes = ByteBuffer.allocate(8).putDouble(value).array();
+			return cipher.doFinal(valueBytes);
+		} catch (NoSuchPaddingException | IllegalBlockSizeException | NoSuchAlgorithmException | InvalidKeySpecException | BadPaddingException | InvalidKeyException e) {
+			// If failed to encrypt, return an empty byte array
+			e.printStackTrace();
+			return new byte[0];
+		}
+	}
 
 }

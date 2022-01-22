@@ -19,9 +19,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	public void onCreate(SQLiteDatabase db) {
 		String stmt = "CREATE TABLE IF NOT EXISTS sks (epoch_day INTEGER PRIMARY KEY NOT NULL, sk BLOB NOT NULL);";
 		db.execSQL(stmt);
-		stmt += "CREATE TABLE IF NOT EXISTS recvd_msgs (interval_n INTEGER NOT NULL, msg BLOB NOT NULL, PRIMARY KEY (interval_n, msg));";
+		stmt += "CREATE TABLE IF NOT EXISTS recvd_msgs (interval_n INTEGER NOT NULL, msg BLOB NOT NULL, enc_lat BLOB, enc_long BLOB, PRIMARY KEY (interval_n, msg));";
 		db.execSQL(stmt);
-		//TODO: Add Creation of Location Table too
 	}
 
 	@Override
@@ -62,11 +61,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		}
 	}
 
-	public boolean insertRecvdMessage(byte[] message, long intervalN) {
+	public boolean insertRecvdMessage(byte[] message, long intervalN, byte[] encLat, byte[] encLong) {
 		SQLiteDatabase db = this.getWritableDatabase();
 		ContentValues cv = new ContentValues();
 		cv.put("msg", message);
 		cv.put("interval_n", intervalN);
+		if (encLat.length == 0 || encLong.length == 0) {
+			// If failed to get full location information, don't insert any location information
+			cv.putNull("enc_lat");
+			cv.putNull("enc_long");
+		}
+		else {
+			cv.put("enc_lat", encLat);
+			cv.put("enc_long", encLong);
+		}
 		long insert = db.insert("recvd_msgs", null, cv);
 		return insert >= 0;
 	}

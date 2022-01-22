@@ -16,6 +16,8 @@ import com.example.app.activities.utils.PasswordInputFilter;
 import com.example.app.exceptions.PasswordSetFailedException;
 import com.example.app.helpers.SharedPrefsHelper;
 
+import java.security.NoSuchAlgorithmException;
+
 public class SetPasswordActivity extends AppCompatActivity {
 	private static final String TAG = "SetPasswordActivity";
 	private static final int MIN_PASSWORD_LENGTH = 8;
@@ -65,7 +67,7 @@ public class SetPasswordActivity extends AppCompatActivity {
 		try {
 			new SecureStorageManager(this).setPassword(password);
 		}
-		catch (PasswordSetFailedException e) {
+		catch (PasswordSetFailedException | NoSuchAlgorithmException e) {
 			e.printStackTrace();
 			passwordFeedback.setText("Internal error occurred");
 			passwordFeedback.setTextColor(Color.RED);
