@@ -12,6 +12,7 @@ import com.example.app.activities.MainActivity;
 import com.example.app.alarms.QueryInfectedSKsAlarm;
 import com.example.app.alarms.SendContactMsgAlarm;
 import com.example.app.alarms.SendDummyICCMsgAlarm;
+import com.example.app.bluetooth.ContactServer;
 import com.example.app.exceptions.DatabaseInsertionFailedException;
 
 import java.io.IOException;
@@ -21,6 +22,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 
 public class ContactTracingService extends Service {
+
+	private static final String TAG = ContactTracingService.class.getName();
+
 	private OutgoingMsgManager outMsgManager;
 	private IncomingMsgManager inMsgManager;
 
@@ -32,15 +36,17 @@ public class ContactTracingService extends Service {
 	public void onCreate() {
 		super.onCreate();
 		try {
+			inMsgManager = new IncomingMsgManager(getApplicationContext());
+			ContactServer.setInMsgManager(inMsgManager);
+			ContactServer.startServer(this);
 			outMsgManager = new OutgoingMsgManager(getApplicationContext());
-			inMsgManager = new IncomingMsgManager();
-			queryInfectedSKsAlarm = new QueryInfectedSKsAlarm(this);
-			sendContactMsgAlarm = new SendContactMsgAlarm(this);
-			sendDummyICCMsgAlarm = new SendDummyICCMsgAlarm(this);
 		}
 		catch (NoSuchAlgorithmException | DatabaseInsertionFailedException e) {
 			e.printStackTrace();
 		}
+    queryInfectedSKsAlarm = new QueryInfectedSKsAlarm(this);
+		sendContactMsgAlarm = new SendContactMsgAlarm(this);
+		sendDummyICCMsgAlarm = new SendDummyICCMsgAlarm(this);
 	}
 
 	@Override
