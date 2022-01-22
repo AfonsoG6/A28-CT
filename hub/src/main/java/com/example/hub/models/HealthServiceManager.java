@@ -56,7 +56,7 @@ public class HealthServiceManager {
         String saltedPassword = password;
 
         for (int i = 0; i < SALT_ITERATIONS; i++) {
-            saltedPassword = passwordLen + SALT + password + passwordLen;
+            saltedPassword = passwordLen + SALT + saltedPassword + passwordLen;
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] encodedHash = digest.digest(
                     saltedPassword.getBytes(StandardCharsets.UTF_8)
