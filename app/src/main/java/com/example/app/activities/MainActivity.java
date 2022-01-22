@@ -11,6 +11,10 @@ import android.view.View;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import android.widget.EditText;
+import android.widget.Toast;
+import com.example.app.ContactTracingService;
+import com.example.app.HubFrontend;
 import com.example.app.R;
 
 public class MainActivity extends AppCompatActivity {
@@ -25,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+    startForegroundService(new Intent(this, ContactTracingService.class));
 		adapter = ((BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE)).getAdapter();
 		if (adapter == null)
 			return;

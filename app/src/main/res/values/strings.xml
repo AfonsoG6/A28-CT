@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">app</string>
+    <string name="ct_service_title">CT Service</string>
+    <string name="ct_service_text">CT Service is running in the background</string>
+    <string name="ct_service_ticker">Ticker?</string>
 </resources>
