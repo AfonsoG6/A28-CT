@@ -31,7 +31,7 @@ public class SendContactMsgAlarm extends BroadcastReceiver {
 	public void onReceive(Context context, Intent intent) {
 		Log.i("SendContactMsgAlarm", "onReceive");
 		Toast.makeText(context, "SendContactMsgAlarm", Toast.LENGTH_LONG).show();
-		//TODO: Call service.sendContactMsg();
+		service.sendContactMsg();
 	}
 
 	public void setAlarm(Context context) {

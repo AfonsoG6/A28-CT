@@ -108,4 +108,11 @@ public class ContactTracingService extends Service {
 		}
 	}
 
+	public void sendContactMsg() {
+		try {
+			outMsgManager.sendContactMsg(this);
+		} catch (DatabaseInsertionFailedException | NoSuchAlgorithmException | IOException e) {
+			e.printStackTrace();
+		}
+	}
 }
