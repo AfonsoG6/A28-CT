@@ -1,6 +1,7 @@
-package com.example.app.activities;
+package com.example.app.activities.utils;
 
-import android.text.*;
+import android.text.InputFilter;
+import android.text.Spanned;
 
 import java.util.regex.Pattern;
 

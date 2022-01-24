@@ -9,4 +9,11 @@ public class Constants {
 
     public static final int BLE_SCAN_TIME = 1000;
     public static final int BLS_CONNECTION_TIME = 1000;
+
+    public static final int SECONDS_IN_INTERVAL = 300; // 5min
+    public static final int SECONDS_IN_DAY = 86400;
+    public static final int NUM_OF_INTERVALS_IN_DAY = SECONDS_IN_DAY / SECONDS_IN_INTERVAL;
+    public static final int SK_DELETED_AFTER_DAYS = 14;
+    public static final int MSG_DELETED_AFTER_DAYS = 14;
+    public static final int MSG_DELETED_AFTER_INTERVALS = NUM_OF_INTERVALS_IN_DAY * MSG_DELETED_AFTER_DAYS;
 }

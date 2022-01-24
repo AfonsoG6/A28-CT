@@ -3,7 +3,6 @@ package com.example.app;
 import android.app.*;
 import android.content.Intent;
 import android.graphics.Color;
-import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
@@ -42,10 +41,10 @@ public class ContactTracingService extends Service {
 			ContactServer.startServer(this);
 			outMsgManager = new OutgoingMsgManager(getApplicationContext());
 		}
-		catch (NoSuchAlgorithmException | DatabaseInsertionFailedException e) {
+		catch (NoSuchAlgorithmException | DatabaseInsertionFailedException | IOException e) {
 			e.printStackTrace();
 		}
-    	queryInfectedSKsAlarm = new QueryInfectedSKsAlarm(this);
+		queryInfectedSKsAlarm = new QueryInfectedSKsAlarm(this);
 		sendContactMsgAlarm = new SendContactMsgAlarm(this);
 		sendDummyICCMsgAlarm = new SendDummyICCMsgAlarm(this);
 	}
@@ -69,6 +68,10 @@ public class ContactTracingService extends Service {
 		queryInfectedSKsAlarm.setAlarm(this);
 		sendContactMsgAlarm.setAlarm(this);
 		sendDummyICCMsgAlarm.setAlarm(this);
+	}
+
+	public boolean getInfectedStatus() {
+		return inMsgManager.queryInfectedSks();
 	}
 
 	private Notification setupNotification() {
@@ -101,4 +104,15 @@ public class ContactTracingService extends Service {
 		}
 	}
 
+	public void sendContactMsg() {
+		try {
+			outMsgManager.sendContactMsg(this);
+		} catch (DatabaseInsertionFailedException | NoSuchAlgorithmException | IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void queryInfectedSks() {
+		inMsgManager.queryInfectedSks();
+	}
 }

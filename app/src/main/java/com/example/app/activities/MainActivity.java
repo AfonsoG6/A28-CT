@@ -1,52 +1,70 @@
 package com.example.app.activities;
 
-import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import android.widget.EditText;
-import android.widget.Toast;
 import com.example.app.ContactTracingService;
-import com.example.app.HubFrontend;
+import com.example.app.IncomingMsgManager;
 import com.example.app.R;
 
 public class MainActivity extends AppCompatActivity {
-
-	private static final int REQUEST_ENABLE_BT = 10;
-	private static int REQUEST_ENABLE_LOCATION_PERMISSION = 11;
-	private BluetoothAdapter adapter;
-	private boolean hasLocationPermission;
 	private static final String TAG = MainActivity.class.getName();
+	private static final int REQUEST_ENABLE_BT = 10;
+	private static final int REQUEST_GIVE_LOCATION_PERMISSION = 11;
+
+	private BluetoothAdapter adapter;
+	private TextView statusTextView;
+
+	private IncomingMsgManager imm;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-    startForegroundService(new Intent(this, ContactTracingService.class));
+		startForegroundService(new Intent(this, ContactTracingService.class));
 		adapter = ((BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE)).getAdapter();
 		if (adapter == null)
 			return;
 		promptEnableBluetooth();
-		hasLocationPermission = ContextCompat.checkSelfPermission(this,
-				Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
-
+		requestLocationPermission();
+		statusTextView = findViewById(R.id.exposedStatusText);
+		imm = new IncomingMsgManager(this.getApplicationContext());
 	}
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		if (requestCode == REQUEST_ENABLE_BT) {
-			if (resultCode != RESULT_OK)
-				promptEnableBluetooth();
+		if (requestCode == REQUEST_ENABLE_BT && resultCode != RESULT_OK) {
+			promptEnableBluetooth();
 		}
 	}
+
+	public void onClickCheckInfection(View view) {
+		statusTextView.setTextColor(Color.BLACK);
+		statusTextView.setText("Checking exposed status...");
+		statusTextView.setVisibility(View.VISIBLE);
+
+		boolean isInfected = imm.queryInfectedSks();
+
+		if (isInfected) {
+			statusTextView.setTextColor(Color.RED);
+			statusTextView.setText("Possible Infection!");
+		} else {
+			statusTextView.setTextColor(Color.GREEN);
+			statusTextView.setText("No detected contact.");
+		}
+	}
+
 
 	public void onClickClaimInfection(View view) {
 		Intent intent = new Intent(this, ICCActivity.class);
@@ -61,6 +79,8 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	private void requestLocationPermission() {
-
+		if (ContextCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+			ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_GIVE_LOCATION_PERMISSION);
+		}
 	}
 }

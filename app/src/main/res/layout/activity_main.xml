@@ -33,4 +33,27 @@
         tools:ignore="TextContrastCheck"
         />
 
+
+    <Button
+            android:text="Check infected"
+            android:layout_width="300dp"
+            android:layout_height="50dp" android:id="@+id/checkInfectedButton"
+            android:textColor="#263238"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@id/imageView"
+            app:layout_constraintTop_toBottomOf="@+id/claimInfectionButton"
+            app:layout_constraintHorizontal_bias="0.495"
+            app:layout_constraintVertical_bias="0.0" app:layout_constraintStart_toStartOf="parent"
+            android:onClick="onClickCheckInfection"/>
+        <TextView
+                android:text="Not exposed"
+                android:layout_width="339dp"
+                android:layout_height="41dp" android:id="@+id/exposedStatusText"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" android:layout_marginBottom="400dp"
+                app:layout_constraintBottom_toTopOf="@+id/imageView"
+                android:textAlignment="center" android:textAllCaps="true" app:layout_constraintTop_toTopOf="parent"
+                android:textSize="24sp" android:visibility="visible" app:layout_constraintVertical_bias="1.0"/>
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>

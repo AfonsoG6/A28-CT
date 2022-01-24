@@ -1,6 +1,7 @@
 package com.example.app;
 
 import android.content.Context;
+import com.example.hub.grpc.Hub;
 import com.example.hub.grpc.Hub.ClaimInfectionRequest;
 import com.example.hub.grpc.Hub.PingRequest;
 import com.example.hub.grpc.Hub.PingResponse;
@@ -17,8 +18,6 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.charset.spi.CharsetProvider;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -70,6 +69,7 @@ public class HubFrontend {
 				.hostnameVerifier((hostname, session) -> true) // Ignore hostname verification for now since the server is local
 				.build();
 	}
+
 
 	public boolean ping(String content) {
 		ManagedChannel channel = buildChannel();
@@ -125,8 +125,13 @@ public class HubFrontend {
 		return new String(dummyIcc);
 	}
 
-	public void queryInfectedSKs() {
-		//TODO: Implement
+	public Hub.QueryInfectedSKsResponse queryInfectedSKs(long lastQueryEpoch) throws StatusRuntimeException{
+		ManagedChannel channel = buildChannel();
+		HubServiceGrpc.HubServiceBlockingStub stub = HubServiceGrpc.newBlockingStub(channel);
+		Hub.QueryInfectedSKsRequest request = Hub.QueryInfectedSKsRequest.newBuilder().setLastQueryEpoch(lastQueryEpoch).build();
+		Hub.QueryInfectedSKsResponse response = stub.withDeadlineAfter(5, TimeUnit.SECONDS).queryInfectedSKs(request);
+		channel.shutdown();
+		return response;
 	}
 
 }

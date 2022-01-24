@@ -30,7 +30,6 @@
         android:hyphenationFrequency="none"
         android:importantForAutofill="no"
         android:inputType="textFilter"
-        android:digits="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.495"
