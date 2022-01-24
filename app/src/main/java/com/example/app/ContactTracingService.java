@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 import androidx.annotation.Nullable;
 import com.example.app.activities.MainActivity;
@@ -14,6 +15,8 @@ import com.example.app.alarms.SendContactMsgAlarm;
 import com.example.app.alarms.SendDummyICCMsgAlarm;
 import com.example.app.bluetooth.ContactServer;
 import com.example.app.exceptions.DatabaseInsertionFailedException;
+import com.example.app.helpers.DatabaseHelper;
+import com.example.hub.grpc.Hub;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
@@ -66,8 +69,12 @@ public class ContactTracingService extends Service {
 
 	private void setAlarms() {
 		queryInfectedSKsAlarm.setAlarm(this);
-		sendContactMsgAlarm.setAlarm(this);
+		//sendContactMsgAlarm.setAlarm(this);
 		sendDummyICCMsgAlarm.setAlarm(this);
+	}
+
+	public boolean getInfectedStatus() {
+		return inMsgManager.queryInfectedSks();
 	}
 
 	private Notification setupNotification() {
@@ -97,6 +104,7 @@ public class ContactTracingService extends Service {
 	public OutgoingMsgManager getOutgoingMsgManager() {
 		return outMsgManager;
 	}
+
 
 	public void sendDummyICCMsg() {
 		try {

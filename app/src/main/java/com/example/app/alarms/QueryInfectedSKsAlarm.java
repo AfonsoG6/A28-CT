@@ -27,8 +27,11 @@ public class QueryInfectedSKsAlarm extends BroadcastReceiver {
 	public void onReceive(Context context, Intent intent) {
 		Log.i("QueryInfectedSKsAlarm", "onReceive");
 		Toast.makeText(context, "QueryInfectedSKsAlarm", Toast.LENGTH_LONG).show();
-		//TODO use inMsgManager to query Infected SKs and check the database for matching msgs
+		service.getIncomingMsgManager().queryInfectedSks();
+		setAlarm(context);
 	}
+
+
 
 	public void setAlarm(Context context) {
 		Calendar calendar = Calendar.getInstance();

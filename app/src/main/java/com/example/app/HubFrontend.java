@@ -1,6 +1,7 @@
 package com.example.app;
 
 import android.content.Context;
+import com.example.hub.grpc.Hub;
 import com.example.hub.grpc.Hub.ClaimInfectionRequest;
 import com.example.hub.grpc.Hub.PingRequest;
 import com.example.hub.grpc.Hub.PingResponse;
@@ -71,6 +72,7 @@ public class HubFrontend {
 				.build();
 	}
 
+
 	public boolean ping(String content) {
 		ManagedChannel channel = buildChannel();
 		HubServiceGrpc.HubServiceBlockingStub stub = HubServiceGrpc.newBlockingStub(channel);
@@ -125,8 +127,13 @@ public class HubFrontend {
 		return new String(dummyIcc);
 	}
 
-	public void queryInfectedSKs() {
-		//TODO: Implement
+	public Hub.QueryInfectedSKsResponse queryInfectedSKs() throws StatusRuntimeException{
+		ManagedChannel channel = buildChannel();
+		HubServiceGrpc.HubServiceBlockingStub stub = HubServiceGrpc.newBlockingStub(channel);
+		Hub.QueryInfectedSKsRequest request = Hub.QueryInfectedSKsRequest.newBuilder().setLastQueryEpoch(0).build(); //TODO EPOCH
+		Hub.QueryInfectedSKsResponse response = stub.withDeadlineAfter(5, TimeUnit.SECONDS).queryInfectedSKs(request);
+		channel.shutdown();
+		return response;
 	}
 
 }

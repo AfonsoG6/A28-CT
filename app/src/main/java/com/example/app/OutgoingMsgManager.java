@@ -19,6 +19,7 @@ import java.security.SecureRandom;
 import java.util.Calendar;
 
 public class OutgoingMsgManager {
+
 	private static final int SECONDS_TO_UPDATE_MSG = 300; // 5min = 5*60s
 	private static final int SECONDS_IN_DAY = 86400;
 	private static final int SK_DELETED_AFTER_DAYS = 14;
@@ -105,6 +106,7 @@ public class OutgoingMsgManager {
 
 		// Calculate the time interval that we're currently at and check if already using the correct Msg.
 		long intervalN = epochTime/SECONDS_TO_UPDATE_MSG;
+
 		if (epochDay == currentSKEpochDay && intervalN == currentMsgIntervalN) return; // currentMsg is up-to-date
 
 		if (epochDay != currentSKEpochDay) updateCurrentSK(context);
