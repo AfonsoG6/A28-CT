@@ -27,4 +27,10 @@ public class EpochHelper {
 	public static long getLastIntervalOfDay(long epochDay) {
 		return getFirstIntervalOfDay(epochDay) + Constants.NUM_OF_INTERVALS_IN_DAY - 1;
 	}
+
+	public static String getDateFromIntervalN(long intervalN) {
+		Calendar cal = Calendar.getInstance();
+		cal.setTimeInMillis(intervalN * Constants.SECONDS_IN_INTERVAL * 1000);
+		return cal.getTime().toString();
+	}
 }

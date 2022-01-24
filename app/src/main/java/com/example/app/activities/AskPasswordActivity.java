@@ -39,6 +39,9 @@ public class AskPasswordActivity extends AppCompatActivity {
 			String password = passwordEditText.getText().toString();
 			if (ssManager.passwordMatches(password)) {
 				Intent intent = new Intent(this, ShowContactsActivity.class);
+				Bundle bundle = new Bundle();
+				bundle.putString("password", password);
+				intent.putExtras(bundle);
 				Toast.makeText(this, "Password is correct", Toast.LENGTH_SHORT).show();
 				startActivity(intent);
 				finish();

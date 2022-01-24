@@ -1,6 +1,7 @@
 package com.example.app;
 
 import android.content.Context;
+import com.example.app.exceptions.DecryptionFailedException;
 import com.example.app.exceptions.PasswordCheckFailedException;
 import com.example.app.exceptions.PasswordSetFailedException;
 import com.example.app.helpers.SharedPrefsHelper;
@@ -14,6 +15,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 
@@ -42,6 +44,19 @@ public class SecureStorageManager {
 			spHelper.setCheckHash(chkHash);
 		} catch (NoSuchAlgorithmException | IOException e) {
 			throw new PasswordSetFailedException(e);
+		}
+	}
+
+	public byte[] getDeobfuscatedPrivateKey(String password) throws PasswordCheckFailedException {
+		try {
+			if (!passwordMatches(password)) throw new PasswordCheckFailedException();
+
+			byte[] obfPrivKey = spHelper.getObfuscatedPrivateKey();
+			byte[] obfHash = hash(password, spHelper.getObfuscationSalt());
+			return deobfuscate(obfPrivKey, obfHash);
+		}
+		catch (PasswordSetFailedException | IOException | NoSuchAlgorithmException e) {
+			throw new PasswordCheckFailedException(e);
 		}
 	}
 
@@ -95,6 +110,10 @@ public class SecureStorageManager {
 		return result;
 	}
 
+	private byte[] deobfuscate(byte[] privateKey, byte[] obfHash) throws PasswordSetFailedException {
+		return obfuscate(privateKey, obfHash);
+	}
+
 	private byte[] genSalt() {
 		byte[] salt = new byte[SALT_LENGTH];
 		secureRandom.nextBytes(salt);
@@ -128,6 +147,18 @@ public class SecureStorageManager {
 			// If failed to encrypt, return an empty byte array
 			e.printStackTrace();
 			return new byte[0];
+		}
+	}
+
+	public double decryptValue(byte[] privateKey, byte[] value) throws DecryptionFailedException {
+		try {
+			Cipher cipher = Cipher.getInstance("RSA/CBC/OAEP");
+			PrivateKey privateKeyObject = KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(privateKey));
+			cipher.init(Cipher.DECRYPT_MODE, privateKeyObject);
+			byte[] decryptedValue = cipher.doFinal(value);
+			return ByteBuffer.wrap(decryptedValue).getDouble();
+		} catch (NoSuchPaddingException | IllegalBlockSizeException | NoSuchAlgorithmException | InvalidKeySpecException | BadPaddingException | InvalidKeyException e) {
+			throw new DecryptionFailedException(e);
 		}
 	}
 

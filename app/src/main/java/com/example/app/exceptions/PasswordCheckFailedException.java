@@ -9,4 +9,6 @@ public class PasswordCheckFailedException extends Exception {
 	public PasswordCheckFailedException(Throwable cause) {
 		super(cause);
 	}
+
+	public PasswordCheckFailedException() {}
 }

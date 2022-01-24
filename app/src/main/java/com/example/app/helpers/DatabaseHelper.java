@@ -7,10 +7,14 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import androidx.annotation.Nullable;
 import com.example.app.Constants;
+import com.example.app.SecureStorageManager;
+import com.example.app.exceptions.DecryptionFailedException;
 import com.example.app.exceptions.NotFoundInDatabaseException;
+import com.example.app.exceptions.PasswordCheckFailedException;
 import com.example.hub.grpc.Hub;
 import com.google.protobuf.ByteString;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -18,8 +22,11 @@ import java.util.Random;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
+	private final Context context;
+
 	public DatabaseHelper(@Nullable Context context) {
 		super(context, "sirs.db", null, 1);
+		this.context = context;
 	}
 
 	@Override
@@ -153,6 +160,50 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			String stmt = "UPDATE recvd_msgs SET infected = 1 WHERE interval_n = ? AND msg = ?";
 			String[] args = {String.valueOf(intervalN), Arrays.toString(currentMsg)};
 			db.execSQL(stmt, args);
+		}
+	}
+
+	public List<ContactInfo> getInfectedContacts(String password)
+			throws PasswordCheckFailedException, NoSuchAlgorithmException {
+		SecureStorageManager ssManager = new SecureStorageManager(context);
+		byte[] privateKey = ssManager.getDeobfuscatedPrivateKey(password);
+		List<ContactInfo> contactInfos = new ArrayList<>();
+
+		try (SQLiteDatabase db = this.getReadableDatabase()) {
+			String stmt = "SELECT interval_n, enc_lat, enc_long FROM recvd_msgs WHERE infected = 1";
+			try (Cursor cursor = db.rawQuery(stmt, null)) {
+				if (cursor.moveToFirst()) {
+					do {
+						long intervalN = cursor.getLong(0);
+						boolean validLocation = true;
+						double latitude = 0;
+						double longitude = 0;
+						try {
+							latitude = ssManager.decryptValue(privateKey, cursor.getBlob(1));
+							longitude = ssManager.decryptValue(privateKey, cursor.getBlob(2));
+						} catch (DecryptionFailedException e) {
+							e.printStackTrace();
+							validLocation = false;
+						}
+						contactInfos.add(new ContactInfo(intervalN, validLocation, latitude, longitude));
+					} while (cursor.moveToNext());
+				}
+				return contactInfos;
+			}
+		}
+	}
+
+	public static class ContactInfo {
+		public final long intervalN;
+		public final boolean validLocation;
+		public final double latitude;
+		public final double longitude;
+
+		public ContactInfo(long intervalN, boolean validLocation, double latitude, double longitude) {
+			this.intervalN = intervalN;
+			this.validLocation = validLocation;
+			this.latitude = latitude;
+			this.longitude = longitude;
 		}
 	}
 }
