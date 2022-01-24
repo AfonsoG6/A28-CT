@@ -115,17 +115,16 @@ public class OutgoingMsgManager {
 							.getAdapter();
 					BleScanner scanner = new BleScanner(adapter);
 					scanner.startScan();
-					sleep(BleScanner.SCAN_PERIOD);
+					sleep(Constants.BLE_SCAN_TIME);
 					scanner.stopScan();
 					ContactServer.connectDevices(context, scanner.getScanResults());
-					sleep(1000);
+					sleep(Constants.BLS_CONNECTION_TIME);
 					ContactServer.sendMessage(message);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
 			}
-		};
-		ContactServer.connectDevices(context, null);
+		}.start();
 	}
 
 }

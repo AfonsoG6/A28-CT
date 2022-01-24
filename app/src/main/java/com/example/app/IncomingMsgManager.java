@@ -12,6 +12,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import androidx.core.content.ContextCompat;
 import com.example.app.activities.MainActivity;
+import android.util.Log;
 import com.example.app.bluetooth.BleMessage;
 import com.example.app.helpers.DatabaseHelper;
 import com.example.app.helpers.EpochHelper;
@@ -27,7 +28,8 @@ import java.security.cert.CertificateException;
 import java.util.List;
 
 public class IncomingMsgManager {
-    private static final String TAG = "IncomingMsgManager";
+
+    private static final String TAG = IncomingMsgManager.class.getName();
 
 	private final Context context;
 
@@ -50,6 +52,7 @@ public class IncomingMsgManager {
                 encLat = new byte[0];
                 encLong = new byte[0];
             }
+            Log.i(TAG, "Writing received message: " + message.toString());
             return dbHelper.insertRecvdMessage(message.getMessage(), message.getIntervalN(), encLat, encLong);
         }
         catch (NoSuchAlgorithmException e) {

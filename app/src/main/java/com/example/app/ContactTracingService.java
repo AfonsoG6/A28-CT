@@ -13,6 +13,7 @@ import com.example.app.alarms.SendContactMsgAlarm;
 import com.example.app.alarms.SendDummyICCMsgAlarm;
 import com.example.app.bluetooth.ContactServer;
 import com.example.app.exceptions.DatabaseInsertionFailedException;
+import lombok.Getter;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
@@ -24,8 +25,8 @@ public class ContactTracingService extends Service {
 
 	private static final String TAG = ContactTracingService.class.getName();
 
-	private OutgoingMsgManager outMsgManager;
-	private IncomingMsgManager inMsgManager;
+	@Getter private OutgoingMsgManager outMsgManager;
+	@Getter private IncomingMsgManager inMsgManager;
 
 	private QueryInfectedSKsAlarm queryInfectedSKsAlarm;
 	private SendContactMsgAlarm sendContactMsgAlarm;

@@ -1,9 +1,13 @@
 package com.example.app.bluetooth;
 
+import lombok.Getter;
+import lombok.ToString;
 import org.apache.commons.lang3.SerializationUtils;
 
 import java.io.Serializable;
 
+@Getter
+@ToString
 public class BleMessage implements Serializable {
 
     private byte[] message;
@@ -14,14 +18,6 @@ public class BleMessage implements Serializable {
         this.intervalN = intervalN;
     }
 
-    public byte[] getMessage() {
-        return message;
-    }
-
-    public long getIntervalN() {
-        return intervalN;
-    }
-
     public byte[] toByteArray() {
         return SerializationUtils.serialize(this);
     }
@@ -29,5 +25,4 @@ public class BleMessage implements Serializable {
     public static BleMessage fromByteArray(byte[] data) {
         return (BleMessage) SerializationUtils.deserialize(data);
     }
-
 }

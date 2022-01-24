@@ -22,18 +22,17 @@ public class ContactServer {
     private static BluetoothManager manager;
     private static BluetoothAdapter adapter;
 
-    private static BluetoothGattServerCallback gattServerCallback;
     private static BluetoothGattServer gattServer;
 
-    private static BluetoothLeAdvertiser advertiser;
     private static AdvertiseCallback advertiseCallback;
-    private static AdvertiseSettings advertiseSettings = buildAdvertiseSettings();
-    private static AdvertiseData advertiseData = buildAdvertiseData();
+    private static final AdvertiseSettings advertiseSettings = buildAdvertiseSettings();
+    private static final AdvertiseData advertiseData = buildAdvertiseData();
 
     private static BluetoothGattCallback gattClientCallback;
 
-    private static List<ConnectedDevice> connectedDevices = new ArrayList<>();
+    private static final List<ConnectedDevice> connectedDevices = new ArrayList<>();
 
+    //TODO: Ver possível memory leak
     private static IncomingMsgManager inMsgManager;
 
     public static void startServer(Context context) {
@@ -54,19 +53,20 @@ public class ContactServer {
         }
     }
 
-    public static boolean sendMessage(byte[] message) {
+    public static void sendMessage(byte[] message) {
         for (ConnectedDevice device: connectedDevices) {
             device.getCharacteristic().setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
             device.getCharacteristic().setValue(message);
 
             boolean success = device.getGatt().writeCharacteristic(device.getCharacteristic());
-            if (!success) return false;
+            if (!success) {
+                Log.w(TAG, "Could not send message to device: " + device.getGatt().getDevice().getName());
+            }
         }
-        return true;
     }
 
     private static void startAdvertisement() {
-        advertiser = adapter.getBluetoothLeAdvertiser();
+        BluetoothLeAdvertiser advertiser = adapter.getBluetoothLeAdvertiser();
         if (advertiseCallback == null) {
             advertiseCallback = new DeviceAdvertiseCallback();
 
@@ -75,7 +75,7 @@ public class ContactServer {
     }
 
     private static void setUpGattServer(Context context) {
-        gattServerCallback = new GattServerCallback();
+        BluetoothGattServerCallback gattServerCallback = new GattServerCallback();
         gattServer = manager.openGattServer(context, gattServerCallback);
         gattServer.addService(setUpGattService());
     }
@@ -113,6 +113,8 @@ public class ContactServer {
         @Override
         public void onConnectionStateChange(BluetoothDevice device, int status, int newState) {
             super.onConnectionStateChange(device, status, newState);
+            if (status == BluetoothGatt.GATT_SUCCESS && newState == BluetoothProfile.STATE_CONNECTED)
+                Log.i(TAG, "Started connection with client " + device.getName());
         }
 
         @Override
@@ -129,6 +131,8 @@ public class ContactServer {
                     device, requestId, characteristic, preparedWrite, responseNeeded, offset, value
             );
 
+            Log.i(TAG, "Received message from " + device.getName());
+
             if (characteristic.getUuid() == MESSAGE_UUID) {
                 gattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, null);
                 boolean insertResult = inMsgManager.addMessageToDatabase(value);
@@ -142,11 +146,13 @@ public class ContactServer {
         @Override
         public void onStartFailure(int errorCode) {
             super.onStartFailure(errorCode);
+            Log.w(TAG, "Could not start Ble Advertisement. Error: " + errorCode);
         }
 
         @Override
         public void onStartSuccess(AdvertiseSettings settingsInEffect) {
             super.onStartSuccess(settingsInEffect);
+            Log.i(TAG, "Started Ble Advertisement");
         }
     }
 
@@ -157,6 +163,7 @@ public class ContactServer {
             boolean isSuccess = status == BluetoothGatt.GATT_SUCCESS;
             boolean isConnected = newState == BluetoothProfile.STATE_CONNECTED;
             if (isSuccess && isConnected)
+                Log.i(TAG, "Connected to gatt server: " + gatt.getDevice().getName());
                 gatt.discoverServices();
         }
 
@@ -165,7 +172,15 @@ public class ContactServer {
             super.onServicesDiscovered(gatt, status);
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 BluetoothGattService service = gatt.getService(SERVICE_UUID);
+                if (service == null) {
+                    Log.i(TAG, "Device doesn't have service: " + gatt.getDevice().getName());
+                    return;
+                }
                 BluetoothGattCharacteristic characteristic = service.getCharacteristic(MESSAGE_UUID);
+                if (characteristic == null) {
+                    Log.i(TAG, "Device doesn't have characteristic: " + gatt.getDevice().getName());
+                    return;
+                }
                 connectedDevices.add(new ConnectedDevice(gatt, characteristic));
             }
         }

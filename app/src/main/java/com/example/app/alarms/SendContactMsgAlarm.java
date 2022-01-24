@@ -14,7 +14,7 @@ import java.util.Calendar;
 public class SendContactMsgAlarm extends BroadcastReceiver {
 	public static final long INTERVAL = AlarmManager.INTERVAL_FIFTEEN_MINUTES/15;
 
-	ContactTracingService service;
+	private ContactTracingService service;
 
 	public SendContactMsgAlarm() { /* Empty */ }
 
@@ -34,7 +34,9 @@ public class SendContactMsgAlarm extends BroadcastReceiver {
 		calendar.setTimeInMillis(System.currentTimeMillis());
 
 		Intent intent = new Intent(context, SendContactMsgAlarm.class);
-		PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 1, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+		PendingIntent pendingIntent = PendingIntent.getBroadcast(
+				context, 1, intent, PendingIntent.FLAG_CANCEL_CURRENT
+		);
 		AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
 		alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
