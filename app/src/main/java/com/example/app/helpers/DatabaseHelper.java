@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 import androidx.annotation.Nullable;
 import com.example.app.Constants;
 import com.example.app.SecureStorageManager;
@@ -36,6 +37,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		db.execSQL(stmt);
 		stmt += "CREATE TABLE IF NOT EXISTS recvd_msgs (intervalN INTEGER NOT NULL, msg BLOB NOT NULL, enc_lat BLOB, enc_long BLOB, infected INTEGER NOT NULL, PRIMARY KEY (intervalN, msg));";
 		db.execSQL(stmt);
+		Log.i(TAG, "Created database tables (sks & recvd_msgs)");
 	}
 
 	/* Don't call this inside onCreate! Or anywhere else where a database is already opened! */
@@ -53,6 +55,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	public void deleteOldSKs() {
 		long epochDay = EpochHelper.getCurrentEpochDay() - Constants.SK_DELETED_AFTER_DAYS;
+		Log.d(TAG, "Deleting old SKs before epochDay " + epochDay);
 		try (SQLiteDatabase db = this.getWritableDatabase()) {
 			String stmt = "DELETE FROM sks WHERE epoch_day < ?";
 			String[] args = {String.valueOf(epochDay)};
@@ -61,6 +64,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	}
 
 	public boolean insertSK(long epochDay, byte[] sk) {
+		Log.d(TAG, "Inserting SK for epochDay " + epochDay + ": " + Arrays.toString(sk) + "(length=" + sk.length + ")");
 		try (SQLiteDatabase db = this.getWritableDatabase()) {
 			ContentValues cv = new ContentValues();
 			cv.put("epoch_day", epochDay);
@@ -77,7 +81,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			String[] args = {String.valueOf(epochDay)};
 			try (Cursor cursor = db.rawQuery(stmt, args)) {
 				if (cursor.moveToFirst()) {
-					return cursor.getBlob(0);
+					byte[] sk = cursor.getBlob(0);
+					Log.d(TAG, "Found SK for epochDay " + epochDay + ": " + Arrays.toString(sk) + "(length=" + sk.length + ")");
+					return sk;
 				}
 				else {
 					throw new NotFoundInDatabaseException();
@@ -88,16 +94,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	public List<Hub.SKEpochDayPair> getAllSKs() {
 		deleteOldSKs();
+		Log.d(TAG, "Getting all SKs");
 		List<Hub.SKEpochDayPair> skEpochDayPairs = new ArrayList<>();
 		try (SQLiteDatabase db = this.getReadableDatabase()) {
 			String stmt = "SELECT epoch_day, sk FROM sks";
 			try (Cursor cursor = db.rawQuery(stmt, null)) {
 				if (cursor.moveToFirst()) {
 					do {
+						int epochDay = cursor.getInt(0);
+						byte[] sk = cursor.getBlob(1);
+						Log.d(TAG, "Found SK for epoch day " + epochDay + ": " + Arrays.toString(sk) + "(length=" + sk.length + ")");
 						Hub.SKEpochDayPair skEpochDayPair = Hub.SKEpochDayPair.newBuilder()
-								.setEpochDay(cursor.getInt(0))
-								.setSk(ByteString.copyFrom(cursor.getBlob(1)))
+								.setEpochDay(epochDay)
+								.setSk(ByteString.copyFrom(sk))
 								.build();
+						skEpochDayPairs.add(skEpochDayPair);
 					} while (cursor.moveToNext());
 				}
 			}
@@ -107,6 +118,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	public void deleteOldRecvdMsgs() {
 		long intervalN = EpochHelper.getCurrentInterval() - Constants.MSG_DELETED_AFTER_INTERVALS;
+		Log.d(TAG, "Deleting old Received Msgs before interval " + intervalN);
 		try (SQLiteDatabase db = this.getWritableDatabase()) {
 			String stmt = "DELETE FROM recvd_msgs WHERE interval_n < ?";
 			String[] args = {String.valueOf(intervalN)};
@@ -115,6 +127,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	}
 
 	public boolean insertRecvdMessage(byte[] message, long intervalN, byte[] encLat, byte[] encLong) {
+		Log.d(TAG, "Inserting Received Msg: " + "msg=" + Arrays.toString(message) + ", intervalN=" + intervalN + ", encLat=" + Arrays.toString(encLat) + ", encLong=" + Arrays.toString(encLong) + ", infected=0");
 		try (SQLiteDatabase db = this.getWritableDatabase()) {
 			ContentValues cv = new ContentValues();
 			cv.put("msg", message);
@@ -135,6 +148,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	}
 
 	public boolean existsRecvdMessage(byte[] message, long intervalN) {
+		Log.d(TAG, "Checking if Received Msg exists: " + "msg=" + Arrays.toString(message) + ", intervalN=" + intervalN);
 		try (SQLiteDatabase db = this.getReadableDatabase()) {
 			String stmt = "SELECT * FROM recvd_msgs WHERE interval_n = ? AND msg = ?";
 			String[] args = {String.valueOf(intervalN), Arrays.toString(message)};
@@ -148,15 +162,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		try (SQLiteDatabase db = this.getReadableDatabase()) {
 			String stmt = "SELECT COUNT(*) FROM recvd_msgs WHERE infected = 1";
 			try (Cursor cursor = db.rawQuery(stmt, null)) {
-				if (cursor.moveToFirst())
-					return cursor.getInt(0);
-				else
-					return 0;
+				int numContacts;
+
+				if (cursor.moveToFirst()) numContacts = cursor.getInt(0);
+				else numContacts = 0;
+
+				Log.d(TAG, "Got number of infected contacts: " + numContacts);
+				return numContacts;
 			}
 		}
 	}
 
-	public void updateContact(byte[] currentMsg, long intervalN) {
+	public void markContactMsgInfected(byte[] currentMsg, long intervalN) {
+		Log.d(TAG, "Marking contact Msg as infected: " + "msg=" + Arrays.toString(currentMsg) + ", intervalN=" + intervalN);
 		try (SQLiteDatabase db = this.getWritableDatabase()) {
 			String stmt = "UPDATE recvd_msgs SET infected = 1 WHERE interval_n = ? AND msg = ?";
 			String[] args = {String.valueOf(intervalN), Arrays.toString(currentMsg)};
@@ -166,6 +184,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	public List<ContactInfo> getInfectedContacts(String password)
 			throws PasswordCheckFailedException, NoSuchAlgorithmException {
+		Log.d(TAG, "Getting all infected contacts");
 		SecureStorageManager ssManager = new SecureStorageManager(context);
 		byte[] privateKey = ssManager.getDeobfuscatedPrivateKey(password);
 		List<ContactInfo> contactInfos = new ArrayList<>();
@@ -182,10 +201,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 						try {
 							latitude = ssManager.decryptValue(privateKey, cursor.getBlob(1));
 							longitude = ssManager.decryptValue(privateKey, cursor.getBlob(2));
-						} catch (DecryptionFailedException e) {
+						}
+						catch (DecryptionFailedException e) {
+							Log.e(TAG, "Failed to decrypt location information for contact");
 							e.printStackTrace();
 							validLocation = false;
 						}
+						Log.d(TAG, "Got infected contact: " + "intervalN=" + intervalN + ", latitude=" + latitude + ", longitude=" + longitude);
 						contactInfos.add(new ContactInfo(intervalN, validLocation, latitude, longitude));
 					} while (cursor.moveToNext());
 				}

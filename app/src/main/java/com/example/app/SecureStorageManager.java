@@ -1,6 +1,7 @@
 package com.example.app;
 
 import android.content.Context;
+import android.util.Log;
 import com.example.app.exceptions.DecryptionFailedException;
 import com.example.app.exceptions.PasswordCheckFailedException;
 import com.example.app.exceptions.PasswordSetFailedException;
@@ -36,8 +37,11 @@ public class SecureStorageManager {
 		if (spHelper.hasPasswordSet()) return;
 		try {
 			byte[] chkSalt = genSalt();
+			Log.d(TAG, "Generated Check Salt: " + Arrays.toString(chkSalt));
 			byte[] obfSalt = genSalt();
+			Log.d(TAG, "Generated Obfuscation Salt: " + Arrays.toString(obfSalt));
 			byte[] chkHash = hash(password, chkSalt);
+			Log.d(TAG, "Calculated Check Hash: " + Arrays.toString(chkHash));
 			genAndSetKeyPair(hash(password, obfSalt));
 			spHelper.setCheckSalt(chkSalt);
 			spHelper.setObfuscationSalt(obfSalt);
@@ -53,9 +57,12 @@ public class SecureStorageManager {
 
 			byte[] obfPrivKey = spHelper.getObfuscatedPrivateKey();
 			byte[] obfHash = hash(password, spHelper.getObfuscationSalt());
-			return deobfuscate(obfPrivKey, obfHash);
+			byte[] res = deobfuscate(obfPrivKey, obfHash);
+			Log.d(TAG, "Deobfuscated Private Key: " + Arrays.toString(res));
+			return res;
 		}
-		catch (PasswordSetFailedException | IOException | NoSuchAlgorithmException e) {
+		catch (IOException | NoSuchAlgorithmException e) {
+			Log.e(TAG, "Failed to check password", e);
 			throw new PasswordCheckFailedException(e);
 		}
 	}
@@ -65,8 +72,10 @@ public class SecureStorageManager {
 			byte[] hashedPassword = spHelper.getCheckHash();
 			byte[] salt = spHelper.getCheckSalt();
 			byte[] hashedPasswordAttempt = hash(passwordAttempt, salt);
+			Log.d(TAG, "Comparing: " + Arrays.toString(hashedPasswordAttempt) + " with " + Arrays.toString(hashedPassword));
 			return Arrays.equals(hashedPassword, hashedPasswordAttempt);
 		} catch (IOException | NoSuchAlgorithmException e) {
+			Log.e(TAG, "Failed to check password", e);
 			throw new PasswordCheckFailedException(e);
 		}
 	}
@@ -77,10 +86,14 @@ public class SecureStorageManager {
 		keyGen.initialize(KEY_LENGTH, secureRandom);
 		KeyPair keyPair = keyGen.generateKeyPair();
 
-		byte[] privateKey = keyPair.getPrivate().getEncoded();
-		byte[] extendedObfHash = extendHash(obfHash, privateKey.length);
-		byte[] obfPrivKey = obfuscate(privateKey, extendedObfHash);
 		byte[] publicKey = keyPair.getPublic().getEncoded();
+		Log.d(TAG, "Generated Public Key: " + Arrays.toString(publicKey));
+		byte[] privateKey = keyPair.getPrivate().getEncoded();
+		Log.d(TAG, "Generated Private Key: " + Arrays.toString(privateKey));
+		byte[] extendedObfHash = extendHash(obfHash, privateKey.length);
+		Log.d(TAG, "Generated Extended Obfuscation Hash: " + Arrays.toString(extendedObfHash));
+		byte[] obfPrivKey = obfuscate(privateKey, extendedObfHash);
+		Log.d(TAG, "Calculated Obfuscated Private Key: " + Arrays.toString(obfPrivKey));
 
 		spHelper.setObfuscatedPrivateKey(obfPrivKey);
 		spHelper.setPublicKey(publicKey);
@@ -100,18 +113,22 @@ public class SecureStorageManager {
 		return os.toByteArray();
 	}
 
-	private byte[] obfuscate(byte[] privateKey, byte[] obfHash) throws PasswordSetFailedException {
-		if (obfHash.length != privateKey.length)
-			throw new PasswordSetFailedException("Invalid Obfuscation Hash length (Expected " + privateKey.length + ", got " + obfHash.length + ")");
-		byte[] result = new byte[privateKey.length];
-		for (int i = 0; i < privateKey.length; i++) {
-			result[i] = (byte) (privateKey[i] ^ obfHash[i]);
+	private byte[] xorByteArrays(byte[] a, byte[] b) {
+		byte[] result = new byte[a.length];
+		for (int i = 0; i < a.length; i++) {
+			result[i] = (byte) (a[i] ^ b[i]);
 		}
 		return result;
 	}
 
-	private byte[] deobfuscate(byte[] privateKey, byte[] obfHash) throws PasswordSetFailedException {
-		return obfuscate(privateKey, obfHash);
+	private byte[] obfuscate(byte[] privateKey, byte[] obfHash) throws PasswordSetFailedException {
+		if (obfHash.length != privateKey.length)
+			throw new PasswordSetFailedException("Invalid Obfuscation Hash length (Expected " + privateKey.length + ", got " + obfHash.length + ")");
+		return xorByteArrays(privateKey, obfHash);
+	}
+
+	private byte[] deobfuscate(byte[] privateKey, byte[] obfHash) {
+		return xorByteArrays(privateKey, obfHash);
 	}
 
 	private byte[] genSalt() {
@@ -142,10 +159,13 @@ public class SecureStorageManager {
 			PublicKey publicKey = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(publicKeyBytes));
 			cipher.init(Cipher.ENCRYPT_MODE, publicKey);
 			byte[] valueBytes = ByteBuffer.allocate(8).putDouble(value).array();
-			return cipher.doFinal(valueBytes);
+			byte[] res = cipher.doFinal(valueBytes);
+			Log.d(TAG, "Encrypted value: " + value + " -> " + Arrays.toString(res));
+			return res;
 		} catch (NoSuchPaddingException | IllegalBlockSizeException | NoSuchAlgorithmException | InvalidKeySpecException | BadPaddingException | InvalidKeyException e) {
 			// If failed to encrypt, return an empty byte array
 			e.printStackTrace();
+			Log.e(TAG, "Failed to encrypt value: " + value + " (" + e.getMessage() + ")");
 			return new byte[0];
 		}
 	}
@@ -156,8 +176,11 @@ public class SecureStorageManager {
 			PrivateKey privateKeyObject = KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(privateKey));
 			cipher.init(Cipher.DECRYPT_MODE, privateKeyObject);
 			byte[] decryptedValue = cipher.doFinal(value);
-			return ByteBuffer.wrap(decryptedValue).getDouble();
+			double res = ByteBuffer.wrap(decryptedValue).getDouble();
+			Log.d(TAG, "Decrypted value: " + Arrays.toString(value) + " -> " + res);
+			return res;
 		} catch (NoSuchPaddingException | IllegalBlockSizeException | NoSuchAlgorithmException | InvalidKeySpecException | BadPaddingException | InvalidKeyException e) {
+			Log.e(TAG, "Failed to decrypt value: " + Arrays.toString(value) + " (" + e.getMessage() + ")");
 			throw new DecryptionFailedException(e);
 		}
 	}

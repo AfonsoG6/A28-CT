@@ -25,6 +25,7 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.util.Arrays;
 import java.util.List;
 
 public class IncomingMsgManager {
@@ -44,7 +45,9 @@ public class IncomingMsgManager {
             byte[] encLat;
             byte[] encLong;
             if (location != null) {
+                Log.d(TAG, "Encrypting Latitude: " + location.getLatitude());
                 encLat = storageManager.encryptValue(location.getLatitude());
+                Log.d(TAG, "Encrypting Longitude: " + location.getLongitude());
                 encLong = storageManager.encryptValue(location.getLongitude());
             }
             else {
@@ -61,6 +64,7 @@ public class IncomingMsgManager {
     }
 
     private Location getCurrentLocation() {
+        Log.d(TAG, "Getting current location");
         if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return null;
         }
@@ -68,12 +72,14 @@ public class IncomingMsgManager {
     }
 
     private boolean inRiskOfInfection(List<Hub.SKEpochDayPair> extPairs) throws IOException, NoSuchAlgorithmException {
+        Log.d(TAG, "Checking if there is a risk of infection");
         int numContacts;
         try (DatabaseHelper dbHelper = new DatabaseHelper(context)) {
             dbHelper.deleteOldRecvdMsgs();
             numContacts = dbHelper.getNumContacts();
         }
         for(Hub.SKEpochDayPair pair : extPairs) {
+            Log.d(TAG, "Checking if there is a risk of infection originating from sk: " + pair.getSk() + " (epochDay: " + pair.getEpochDay() + ")");
             long epochDay = pair.getEpochDay();
             byte[] sk = pair.getSk().toByteArray();
             long firstIntervalN = EpochHelper.getFirstIntervalOfDay(epochDay);
@@ -83,7 +89,8 @@ public class IncomingMsgManager {
                 byte[] currentMsg = SKHelper.generateMsg(sk, intervalN);
                 try (DatabaseHelper dbHelper = new DatabaseHelper(context)) {
                     if (dbHelper.existsRecvdMessage(currentMsg, intervalN)) {
-                        dbHelper.updateContact(currentMsg, intervalN);
+                        Log.d(TAG, "Found an infected message in internal database: " + Arrays.toString(currentMsg) + " (intervalN: " + intervalN + ")");
+                        dbHelper.markContactMsgInfected(currentMsg, intervalN);
                         numContacts++;
                     }
                 }
@@ -114,10 +121,12 @@ public class IncomingMsgManager {
         synchronized (this) {
             notification.notifyAll();
         }
+        Log.i(TAG, "Sent infection notification");
     }
 
     public boolean queryInfectedSks() {
         try {
+            Log.d(TAG, "Querying Hub for infected SKs");
             SharedPrefsHelper spHelper = new SharedPrefsHelper(context);
             HubFrontend frontend = HubFrontend.getInstance(context);
             Hub.QueryInfectedSKsResponse response = frontend.queryInfectedSKs(spHelper.getLastQueryEpoch());
@@ -130,7 +139,8 @@ public class IncomingMsgManager {
             }
             return inRisk;
         }
-        catch (CertificateException | NoSuchAlgorithmException | KeyStoreException | IOException | KeyManagementException e) {
+        catch (RuntimeException | CertificateException | NoSuchAlgorithmException | KeyStoreException | IOException | KeyManagementException e) {
+            Log.e(TAG, "Error querying Hub for infected SKs", e);
             e.printStackTrace();
             return false;
         }

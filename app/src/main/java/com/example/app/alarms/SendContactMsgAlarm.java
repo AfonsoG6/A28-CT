@@ -25,7 +25,7 @@ public class SendContactMsgAlarm extends BroadcastReceiver {
 
 	@Override
 	public void onReceive(Context context, Intent intent) {
-		Log.i("SendContactMsgAlarm", "onReceive");
+		Log.i(TAG, "Received alarm");
 		Toast.makeText(context, "Sending Contact Msg", Toast.LENGTH_LONG).show();
 		service.sendContactMsg();
 	}

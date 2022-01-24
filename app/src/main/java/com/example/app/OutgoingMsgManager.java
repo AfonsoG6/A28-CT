@@ -3,6 +3,7 @@ package com.example.app;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
+import android.util.Log;
 import com.example.app.bluetooth.BleMessage;
 import com.example.app.bluetooth.BleScanner;
 import com.example.app.bluetooth.ContactServer;
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.Arrays;
 
 public class OutgoingMsgManager {
 	private static final String TAG = OutgoingMsgManager.class.getName();
@@ -35,22 +37,28 @@ public class OutgoingMsgManager {
 		SecureRandom random = SecureRandom.getInstanceStrong();
 		byte[] newSK = new byte[32]; // 256 bits = 32 bytes
 		random.nextBytes(newSK);
+		Log.d(TAG, "Generated new SK: " + Arrays.toString(newSK) + " (" + newSK.length + ")");
 		return newSK;
 	}
 
 	private byte[] generateNextSK(byte[] prevSK) throws NoSuchAlgorithmException {
 		MessageDigest digest = MessageDigest.getInstance("SHA-256");
-		return digest.digest(prevSK);
+		byte[] nextSK = digest.digest(prevSK);
+		Log.d(TAG, "Generated next SK from previous SK: " + Arrays.toString(prevSK) + " (" + prevSK.length + ")  -> " + Arrays.toString(nextSK) + " (" + nextSK.length + ")");
+		return nextSK;
 	}
 
 	public byte[] getSK(Context context, long epochday) throws NotFoundInDatabaseException {
 		try (DatabaseHelper dbHelper = new DatabaseHelper(context)) {
-			return dbHelper.getSK(epochday);
+			byte[] sk = dbHelper.getSK(epochday);
+			Log.d(TAG, "Retrieved SK for epochday " + epochday + ": " + Arrays.toString(sk) + " (" + sk.length + ")");
+			return sk;
 		}
 	}
 
 	public void storeSK(Context context, long epochDay, byte[] sk) throws DatabaseInsertionFailedException {
 		boolean success;
+		Log.d(TAG, "Storing SK for epochday " + epochDay + ": " + Arrays.toString(sk) + " (" + sk.length + ")");
 		try (DatabaseHelper dbHelper = new DatabaseHelper(context)) {
 			success = dbHelper.insertSK(epochDay, sk);
 		}
@@ -65,6 +73,7 @@ public class OutgoingMsgManager {
 
 	private void updateCurrentSK(Context context) throws NoSuchAlgorithmException, DatabaseInsertionFailedException {
 		long epochdayToday = EpochHelper.getCurrentEpochDay();
+		Log.d(TAG, "Updating current SK for today (epochDay = " + epochdayToday + ")");
 		cleanOldSKs(context);
 		// Try to get TODAY's SK from database
 		try {
@@ -99,13 +108,16 @@ public class OutgoingMsgManager {
 
 		if (epochDay != currentSKEpochDay) updateCurrentSK(context);
 
+
 		currentMsg = SKHelper.generateMsg(currentSK, intervalN);
 		currentMsgIntervalN = intervalN;
+		Log.d(TAG, "Updated current Msg for intervalN " + intervalN + ": " + Arrays.toString(currentMsg) + " (" + currentMsg.length + ")");
 	}
 
 	public void sendContactMsg(Context context)
 			throws DatabaseInsertionFailedException, NoSuchAlgorithmException, IOException {
 		updateCurrentMsg(context);
+		Log.d(TAG, "Sending contact Msg for intervalN " + currentMsgIntervalN + ": " + Arrays.toString(currentMsg) + " (" + currentMsg.length + ")");
 		byte[] message = new BleMessage(this.currentMsg, this.currentMsgIntervalN).toByteArray();
 		new Thread() {
 			@Override
@@ -123,6 +135,7 @@ public class OutgoingMsgManager {
 					ContactServer.sendMessage(message);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
+					Thread.currentThread().interrupt();
 				}
 			}
 		}.start();

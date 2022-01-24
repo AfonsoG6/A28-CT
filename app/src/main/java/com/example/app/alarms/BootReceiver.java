@@ -13,7 +13,7 @@ public class BootReceiver extends BroadcastReceiver {
 
 	@Override
 	public void onReceive(Context context, Intent intent) {
-		Log.i("BootReceiver", "onReceive");
+		Log.i(TAG, "Received boot completed broadcast");
 		Toast.makeText(context, "Boot Completed", Toast.LENGTH_LONG).show();
 		if (intent.getAction().equals("android.intent.action.BOOT_COMPLETED")) {
 			SharedPrefsHelper spHelper = new SharedPrefsHelper(context);

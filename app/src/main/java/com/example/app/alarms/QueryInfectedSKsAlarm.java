@@ -25,7 +25,7 @@ public class QueryInfectedSKsAlarm extends BroadcastReceiver {
 
 	@Override
 	public void onReceive(Context context, Intent intent) {
-		Log.i("QueryInfectedSKsAlarm", "onReceive");
+		Log.i(TAG, "Received alarm");
 		Toast.makeText(context, "Querying Hub for Infected SKs", Toast.LENGTH_LONG).show();
 		service.queryInfectedSks();
 		setAlarm(context);

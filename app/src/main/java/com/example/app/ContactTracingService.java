@@ -52,7 +52,7 @@ public class ContactTracingService extends Service {
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		setAlarms();
 		startForeground(29, setupNotification());
-		Log.i("ContactTracingService", "onStartCommand");
+		Log.i(TAG, "Starting service");
 		Toast.makeText(this, "CT Service Started", Toast.LENGTH_LONG).show();
 		return START_STICKY;
 	}
@@ -67,10 +67,6 @@ public class ContactTracingService extends Service {
 		queryInfectedSKsAlarm.setAlarm(this);
 		sendContactMsgAlarm.setAlarm(this);
 		sendDummyICCMsgAlarm.setAlarm(this);
-	}
-
-	public boolean getInfectedStatus() {
-		return inMsgManager.queryInfectedSks();
 	}
 
 	private Notification setupNotification() {
@@ -95,10 +91,12 @@ public class ContactTracingService extends Service {
 
 	public void sendDummyICCMsg() {
 		try {
+			Log.i(TAG, "Sending dummy ICC message");
 			HubFrontend hubFrontend = HubFrontend.getInstance(this);
 			hubFrontend.sendDummyClaimInfection();
 		}
 		catch (NoSuchAlgorithmException | CertificateException | KeyStoreException | IOException | KeyManagementException e) {
+			Log.e(TAG, "Failed to send dummy ICC message due to: " + e.getMessage());
 			e.printStackTrace();
 		}
 	}
@@ -107,6 +105,7 @@ public class ContactTracingService extends Service {
 		try {
 			outMsgManager.sendContactMsg(this);
 		} catch (DatabaseInsertionFailedException | NoSuchAlgorithmException | IOException e) {
+			Log.e(TAG, "Failed to send contact message due to: " + e.getMessage());
 			e.printStackTrace();
 		}
 	}

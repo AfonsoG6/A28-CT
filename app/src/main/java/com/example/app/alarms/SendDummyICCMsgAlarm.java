@@ -26,7 +26,7 @@ public class SendDummyICCMsgAlarm extends BroadcastReceiver {
 
 	@Override
 	public void onReceive(Context context, Intent intent) {
-		Log.i("SendDummyICCMsgAlarm", "onReceive");
+		Log.i(TAG, "Received alarm");
 		Toast.makeText(context, "Sending Dummy ICC", Toast.LENGTH_LONG).show();
 		service.sendDummyICCMsg();
 		setAlarm(context);
@@ -48,6 +48,8 @@ public class SendDummyICCMsgAlarm extends BroadcastReceiver {
 	private long getRandomInterval() {
 		// We are using a simple mathematical function to make small intervals less likely while still keeping them possible.
 		double exp = random.nextDouble() * 4.6; // Random Value between 0 and 4.6
-		return Math.round((24-Math.pow(2, exp))*AlarmManager.INTERVAL_HOUR);
+		long interval = Math.round((24-Math.pow(2, exp))*AlarmManager.INTERVAL_HOUR);
+		Log.d(TAG, "Generated random interval: " + interval + "ms");
+		return interval;
 	}
 }
