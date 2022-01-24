@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.app.HubFrontend;
 import com.example.app.R;
 import com.example.app.activities.utils.ICCInputFilter;
+import com.example.app.helpers.DatabaseHelper;
 import com.example.hub.grpc.Hub;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
@@ -18,7 +19,6 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class ICCActivity extends AppCompatActivity {
@@ -41,10 +41,13 @@ public class ICCActivity extends AppCompatActivity {
 		statusTextView.setText("Sending Infection Claim...");
 		statusTextView.setVisibility(View.VISIBLE);
 		String icc = iccTextBox.getText().toString().trim().replace("-", "");
-		List<Hub.SKEpochDayPair> sksTEMPORARY = new ArrayList<>(); // FIXME: TEMPORARY
+		List<Hub.SKEpochDayPair> sks;
+		try (DatabaseHelper dbHelper = new DatabaseHelper(this)) {
+			sks = dbHelper.getAllSKs();
+		}
 		try {
 			HubFrontend frontend = HubFrontend.getInstance(getApplicationContext());
-			frontend.claimInfection(false, icc, sksTEMPORARY);
+			frontend.claimInfection(false, icc, sks);
 		}
 		catch (StatusRuntimeException e) {
 			statusTextView.setTextColor(getResources().getColor(R.color.red, getTheme()));

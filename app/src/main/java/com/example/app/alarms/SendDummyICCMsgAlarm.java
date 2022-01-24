@@ -5,17 +5,10 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.os.SystemClock;
 import android.util.Log;
 import android.widget.Toast;
 import com.example.app.ContactTracingService;
-import com.example.app.HubFrontend;
 
-import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.util.Calendar;
 import java.util.Random;
 
@@ -33,7 +26,7 @@ public class SendDummyICCMsgAlarm extends BroadcastReceiver {
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		Log.i("SendDummyICCMsgAlarm", "onReceive");
-		Toast.makeText(context, "SendDummyICCMsgAlarm", Toast.LENGTH_LONG).show();
+		Toast.makeText(context, "Sending Dummy ICC", Toast.LENGTH_LONG).show();
 		service.sendDummyICCMsg();
 		setAlarm(context);
 	}

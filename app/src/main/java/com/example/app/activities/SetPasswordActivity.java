@@ -41,15 +41,15 @@ public class SetPasswordActivity extends AppCompatActivity {
 
 		setContentView(R.layout.activity_set_password);
 
-		passwordFeedback = findViewById(R.id.passwordFeedback);
-		passwordEditText = findViewById(R.id.passwordEditText);
-		confirmPasswordEditText = findViewById(R.id.confirmPasswordEditText);
+		passwordFeedback = findViewById(R.id.newPasswordFeedback);
+		passwordEditText = findViewById(R.id.newPasswordEditText);
+		confirmPasswordEditText = findViewById(R.id.confirmNewPasswordEditText);
 		InputFilter[] filters = {new PasswordInputFilter()};
 		passwordEditText.setFilters(filters);
 		confirmPasswordEditText.setFilters(filters);
 	}
 
-	public void onClickSubmitPassword(View view) {
+	public void onClickSubmitNewPassword(View view) {
 		String password = passwordEditText.getText().toString();
 		String confirmPassword = confirmPasswordEditText.getText().toString();
 		if (password.length() < MIN_PASSWORD_LENGTH) {
@@ -74,8 +74,7 @@ public class SetPasswordActivity extends AppCompatActivity {
 			passwordFeedback.setVisibility(View.VISIBLE);
 			return;
 		}
-
-		Toast.makeText(this, "Success!", Toast.LENGTH_SHORT).show();
+		Toast.makeText(this, "Password set successfully", Toast.LENGTH_SHORT).show();
 		Intent intent = new Intent(this, MainActivity.class);
 		startActivity(intent);
 		finish();

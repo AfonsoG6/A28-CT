@@ -1,11 +1,11 @@
 package com.example.app.activities;
 
-import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
@@ -14,32 +14,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import com.example.app.ContactTracingService;
-import com.example.app.HubFrontend;
 import com.example.app.IncomingMsgManager;
 import com.example.app.R;
-import com.example.app.helpers.DatabaseHelper;
-import com.example.hub.grpc.Hub;
-
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 	private static final String TAG = MainActivity.class.getName();
 	private static final int REQUEST_ENABLE_BT = 10;
 	private static final int REQUEST_GIVE_LOCATION_PERMISSION = 11;
-	private static final int REQUEST_ENABLE_LOCATION = 12;
 
 	private BluetoothAdapter adapter;
-	private boolean hasLocationPermission;
 	private TextView statusTextView;
 
 	private IncomingMsgManager imm;
@@ -53,8 +36,6 @@ public class MainActivity extends AppCompatActivity {
 		if (adapter == null)
 			return;
 		promptEnableBluetooth();
-		hasLocationPermission = ContextCompat.checkSelfPermission(this,
-				Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
 		requestLocationPermission();
 		statusTextView = findViewById(R.id.exposedStatusText);
 		imm = new IncomingMsgManager(this.getApplicationContext());
@@ -69,23 +50,19 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	public void onClickCheckInfection(View view) {
-		statusTextView.setTextColor(getResources().getColor(R.color.black, getTheme()));
+		statusTextView.setTextColor(Color.BLACK);
 		statusTextView.setText("Checking exposed status...");
 		statusTextView.setVisibility(View.VISIBLE);
 
-		DatabaseHelper db = new DatabaseHelper(this.getApplicationContext());
-		db.createTable();
 		boolean isInfected = imm.queryInfectedSks();
 
 		if (isInfected) {
-			statusTextView.setTextColor(getResources().getColor(R.color.red, getTheme()));
+			statusTextView.setTextColor(Color.RED);
 			statusTextView.setText("Possible Infection!");
 		} else {
-			statusTextView.setTextColor(getResources().getColor(R.color.green, getTheme()));
+			statusTextView.setTextColor(Color.GREEN);
 			statusTextView.setText("No detected contact.");
 		}
-
-
 	}
 
 

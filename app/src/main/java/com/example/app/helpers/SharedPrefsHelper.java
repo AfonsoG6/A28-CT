@@ -72,5 +72,21 @@ public class SharedPrefsHelper {
 	public byte[] getObfuscatedPrivateKey() {
 		return Base64.getDecoder().decode(preferences.getString("obfuscated_private_key", ""));
 	}
+	//---------------------------------------------Last Query Epoch-----------------------------------------------------
 
+	@SuppressLint("ApplySharedPref")
+	public void setLastQueryEpoch(long epoch) {
+		SharedPreferences.Editor editor = preferences.edit();
+		editor.putLong("last_query_epoch", epoch);
+		editor.commit();
+	}
+
+	public long getLastQueryEpoch() {
+		if (!preferences.contains("last_query_epoch")) {
+			SharedPreferences.Editor editor = preferences.edit();
+			editor.putLong("last_query_epoch", 0);
+			editor.commit();
+		}
+		return preferences.getLong("last_query_epoch", 0);
+	}
 }
