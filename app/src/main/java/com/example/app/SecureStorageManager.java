@@ -1,6 +1,7 @@
 package com.example.app;
 
 import android.content.Context;
+import com.example.app.exceptions.PasswordCheckFailedException;
 import com.example.app.exceptions.PasswordSetFailedException;
 import com.example.app.helpers.SharedPrefsHelper;
 
@@ -41,6 +42,17 @@ public class SecureStorageManager {
 			spHelper.setCheckHash(chkHash);
 		} catch (NoSuchAlgorithmException | IOException e) {
 			throw new PasswordSetFailedException(e);
+		}
+	}
+
+	public boolean passwordMatches(String passwordAttempt) throws PasswordCheckFailedException {
+		try {
+			byte[] hashedPassword = spHelper.getCheckHash();
+			byte[] salt = spHelper.getCheckSalt();
+			byte[] hashedPasswordAttempt = hash(passwordAttempt, salt);
+			return Arrays.equals(hashedPassword, hashedPasswordAttempt);
+		} catch (IOException | NoSuchAlgorithmException e) {
+			throw new PasswordCheckFailedException(e);
 		}
 	}
 

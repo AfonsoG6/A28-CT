@@ -72,5 +72,4 @@ public class SharedPrefsHelper {
 	public byte[] getObfuscatedPrivateKey() {
 		return Base64.getDecoder().decode(preferences.getString("obfuscated_private_key", ""));
 	}
-
 }
