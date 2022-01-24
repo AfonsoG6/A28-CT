@@ -123,7 +123,6 @@ public class OutgoingMsgManager {
 	public void sendContactMsg(Context context)
 			throws DatabaseInsertionFailedException, NoSuchAlgorithmException, IOException {
 		updateCurrentMsg(context);
-		//TODO: Use Bluetooth LE to send currentMsg and ?currentMsgIntervalN?
 		byte[] message = new BleMessage(this.currentMsg, this.currentMsgIntervalN).toByteArray();
 		new Thread() {
 			@Override
@@ -134,17 +133,16 @@ public class OutgoingMsgManager {
 							.getAdapter();
 					BleScanner scanner = new BleScanner(adapter);
 					scanner.startScan();
-					sleep(BleScanner.SCAN_PERIOD);
+					sleep(Constants.BLE_SCAN_TIME);
 					scanner.stopScan();
 					ContactServer.connectDevices(context, scanner.getScanResults());
-					sleep(1000);
+					sleep(Constants.BLS_CONNECTION_TIME);
 					ContactServer.sendMessage(message);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
 			}
-		};
-		ContactServer.connectDevices(context, null);
+		}.start();
 	}
 
 }

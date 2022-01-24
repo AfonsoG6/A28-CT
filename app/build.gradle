@@ -59,6 +59,10 @@ dependencies {
     // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
     implementation 'org.apache.commons:commons-lang3:3.0'
 
+    // https://mvnrepository.com/artifact/org.projectlombok/lombok
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+
+
     implementation 'androidx.appcompat:appcompat:1.4.0'
     implementation 'com.google.android.material:material:1.4.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.2'

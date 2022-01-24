@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.le.*;
 import android.os.ParcelUuid;
 import android.util.Log;
+import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,12 +14,12 @@ import static com.example.app.Constants.SERVICE_UUID;
 
 public class BleScanner {
 
+    private static final String TAG = BleScanner.class.getName();
+
     private BluetoothLeScanner scanner;
     private ScanSettings scanSettings;
     private List<ScanFilter> filters;
-    private List<BluetoothDevice> devices;
-
-    public static int SCAN_PERIOD = 1000; // 1 second
+    @Getter private List<BluetoothDevice> scanResults;
 
     private ScanCallback leScanCallback =
             new ScanCallback() {
@@ -26,8 +27,8 @@ public class BleScanner {
                 public void onScanResult(int callbackType, ScanResult result) {
                     super.onScanResult(callbackType, result);
                     BluetoothDevice device = result.getDevice();
-                    Log.i("Scan Callback", "Found device: " + device.getName() + " " + device.getAddress());
-                    devices.add(result.getDevice());
+                    Log.i(TAG, "Found device: " + device.getName() + " " + device.getAddress());
+                    scanResults.add(result.getDevice());
                 }
             };
 
@@ -41,19 +42,16 @@ public class BleScanner {
                 .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
                 .setCallbackType(ScanSettings.CALLBACK_TYPE_FIRST_MATCH)
                 .build();
-        devices = new ArrayList<>();
+        scanResults = new ArrayList<>();
     }
 
     public void startScan() {
-        devices.clear();
+        Log.i(TAG, "Starting BLE scan");
+        scanResults.clear();
         scanner.startScan(filters, scanSettings, leScanCallback);
     }
 
     public void stopScan() {
         scanner.stopScan(leScanCallback);
-    }
-
-    public List<BluetoothDevice> getScanResults() {
-        return this.devices;
     }
 }
