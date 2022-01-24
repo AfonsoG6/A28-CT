@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class HubFrontend {
+	private static final String TAG = HubFrontend.class.getName();
+
 	private static HubFrontend instance; // Singleton
 	private final SSLSocketFactory sslSocketFactory;
 

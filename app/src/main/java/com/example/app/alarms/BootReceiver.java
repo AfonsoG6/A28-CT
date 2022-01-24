@@ -9,6 +9,7 @@ import com.example.app.ContactTracingService;
 import com.example.app.helpers.SharedPrefsHelper;
 
 public class BootReceiver extends BroadcastReceiver {
+	private static final String TAG = BootReceiver.class.getName();
 
 	@Override
 	public void onReceive(Context context, Intent intent) {

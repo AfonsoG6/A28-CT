@@ -12,6 +12,7 @@ import com.example.app.ContactTracingService;
 import java.util.Calendar;
 
 public class SendContactMsgAlarm extends BroadcastReceiver {
+	private static final String TAG = SendContactMsgAlarm.class.getName();
 	public static final long INTERVAL = AlarmManager.INTERVAL_FIFTEEN_MINUTES/15;
 
 	private ContactTracingService service;

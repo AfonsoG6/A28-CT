@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Locale;
 
 public class ShowContactsActivity extends AppCompatActivity {
-	private static final String TAG = "ShowContactsActivity";
+	private static final String TAG = ShowContactsActivity.class.getName();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {

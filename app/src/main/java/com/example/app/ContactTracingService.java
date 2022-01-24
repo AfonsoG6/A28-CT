@@ -22,7 +22,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 
 public class ContactTracingService extends Service {
-
 	private static final String TAG = ContactTracingService.class.getName();
 
 	@Getter private OutgoingMsgManager outMsgManager;

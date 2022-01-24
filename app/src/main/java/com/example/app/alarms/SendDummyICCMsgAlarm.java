@@ -13,6 +13,7 @@ import java.util.Calendar;
 import java.util.Random;
 
 public class SendDummyICCMsgAlarm extends BroadcastReceiver {
+	private static final String TAG = SendDummyICCMsgAlarm.class.getName();
 	private static final Random random = new Random();
 
 	ContactTracingService service;

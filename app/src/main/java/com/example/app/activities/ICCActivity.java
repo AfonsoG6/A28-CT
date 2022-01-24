@@ -22,6 +22,8 @@ import java.security.cert.CertificateException;
 import java.util.List;
 
 public class ICCActivity extends AppCompatActivity {
+	private static final String TAG = ICCActivity.class.getName();
+
 	private TextView statusTextView;
 	private EditText iccTextBox;
 

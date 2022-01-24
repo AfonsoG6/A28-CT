@@ -5,6 +5,7 @@ import com.example.app.Constants;
 import java.util.Calendar;
 
 public class EpochHelper {
+	private static final String TAG = EpochHelper.class.getName();
 
 	private EpochHelper() { /* Empty */ }
 

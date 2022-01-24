@@ -7,6 +7,8 @@ import android.content.SharedPreferences;
 import java.util.Base64;
 
 public class SharedPrefsHelper {
+	private static final String TAG = SharedPrefsHelper.class.getName();
+
 	private SharedPreferences preferences;
 
 	public SharedPrefsHelper(Context context) {

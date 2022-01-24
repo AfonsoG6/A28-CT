@@ -17,7 +17,7 @@ import com.example.app.exceptions.PasswordCheckFailedException;
 import java.security.NoSuchAlgorithmException;
 
 public class AskPasswordActivity extends AppCompatActivity {
-	private static final String TAG = "AskPasswordActivity";
+	private static final String TAG = AskPasswordActivity.class.getName();
 
 	private TextView passwordFeedback;
 	private EditText passwordEditText;

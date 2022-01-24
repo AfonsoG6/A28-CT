@@ -19,7 +19,7 @@ import com.example.app.helpers.SharedPrefsHelper;
 import java.security.NoSuchAlgorithmException;
 
 public class SetPasswordActivity extends AppCompatActivity {
-	private static final String TAG = "SetPasswordActivity";
+	private static final String TAG = SetPasswordActivity.class.getName();
 	private static final int MIN_PASSWORD_LENGTH = 8;
 
 	private TextView passwordFeedback;

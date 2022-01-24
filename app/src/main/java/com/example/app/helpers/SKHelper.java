@@ -7,6 +7,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class SKHelper {
+	private static final String TAG = SKHelper.class.getName();
+
 	private SKHelper() { /* Empty */ }
 
 	public static byte[] generateMsg(byte[] sk, long intervalN) throws IOException, NoSuchAlgorithmException {

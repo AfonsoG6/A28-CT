@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Random;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
+	private static final String TAG = DatabaseHelper.class.getName();
 
 	private final Context context;
 

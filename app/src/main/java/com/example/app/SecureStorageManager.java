@@ -20,7 +20,7 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 
 public class SecureStorageManager {
-	public static final String TAG = "SecureStorageManager";
+	public static final String TAG = SecureStorageManager.class.getName();
 	public static final int SALT_LENGTH = 16;
 	public static final int KEY_LENGTH = 2048;
 

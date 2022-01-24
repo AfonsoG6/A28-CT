@@ -13,8 +13,8 @@ import com.example.app.IncomingMsgManager;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.example.app.Constants.SERVICE_UUID;
 import static com.example.app.Constants.MESSAGE_UUID;
+import static com.example.app.Constants.SERVICE_UUID;
 
 public class ContactServer {
     private static final String TAG = ContactServer.class.getName();

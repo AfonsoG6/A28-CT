@@ -18,6 +18,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
 public class OutgoingMsgManager {
+	private static final String TAG = OutgoingMsgManager.class.getName();
 
 	private byte[] currentSK;
 	private long currentSKEpochDay;
