@@ -36,6 +36,7 @@ public class HubFrontend {
 
 	private HubFrontend(Context context) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException,
 			KeyManagementException {
+		Log.i(TAG, "Creating HubFrontend instance");
 		// Install Conscrypt provider
 		Security.insertProviderAt(Conscrypt.newProvider(), Security.getProviders().length);
 
@@ -76,6 +77,7 @@ public class HubFrontend {
 
 
 	public boolean ping(String content) {
+		Log.d(TAG, "Pinging hub with content: " + content);
 		ManagedChannel channel = buildChannel();
 		HubServiceGrpc.HubServiceBlockingStub stub = HubServiceGrpc.newBlockingStub(channel);
 		PingRequest request = PingRequest.newBuilder().setContent(content).build();
@@ -90,6 +92,7 @@ public class HubFrontend {
 	}
 
 	public void claimInfection(boolean isDummy, String icc, List<SKEpochDayPair> sks) throws StatusRuntimeException {
+		Log.d(TAG, "Claiming infection to Hub with ICC: " + icc);
 		ManagedChannel channel = buildChannel();
 		HubServiceGrpc.HubServiceBlockingStub stub = HubServiceGrpc.newBlockingStub(channel);
 		ClaimInfectionRequest request = ClaimInfectionRequest.newBuilder()
@@ -102,6 +105,7 @@ public class HubFrontend {
 	}
 
 	public void sendDummyClaimInfection() throws NoSuchAlgorithmException, StatusRuntimeException {
+		Log.d(TAG, "Sending dummy infection claim to Hub");
 		SecureRandom random = SecureRandom.getInstanceStrong();
 		String dummyIcc = generateDummyIcc();
 		List<SKEpochDayPair> dummySks = new ArrayList<>();
@@ -131,6 +135,7 @@ public class HubFrontend {
 	}
 
 	public Hub.QueryInfectedSKsResponse queryInfectedSKs(long lastQueryEpoch) throws StatusRuntimeException {
+		Log.d(TAG, "Querying Hub for infected SKs since epoch: " + lastQueryEpoch);
 		ManagedChannel channel = buildChannel();
 		HubServiceGrpc.HubServiceBlockingStub stub = HubServiceGrpc.newBlockingStub(channel);
 		Hub.QueryInfectedSKsRequest request = Hub.QueryInfectedSKsRequest.newBuilder().setLastQueryEpoch(lastQueryEpoch).build();

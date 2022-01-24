@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import androidx.annotation.Nullable;
@@ -73,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
 
 	private void promptEnableBluetooth() {
 		if (!adapter.isEnabled()) {
+			Log.i(TAG, "Bluetooth is not enabled. Prompting user to enable it.");
 			Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
 			startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
 		}
@@ -80,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
 
 	private void requestLocationPermission() {
 		if (ContextCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+			Log.i(TAG, "Location permission not granted. Requesting it.");
 			ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_GIVE_LOCATION_PERMISSION);
 		}
 	}

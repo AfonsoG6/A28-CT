@@ -2,6 +2,7 @@ package com.example.app.activities;
 
 import android.os.Bundle;
 import android.text.InputFilter;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -43,6 +44,7 @@ public class ICCActivity extends AppCompatActivity {
 		statusTextView.setText("Sending Infection Claim...");
 		statusTextView.setVisibility(View.VISIBLE);
 		String icc = iccTextBox.getText().toString().trim().replace("-", "");
+		Log.d(TAG, "Sending inputted ICC to Hub: " + icc);
 		List<Hub.SKEpochDayPair> sks;
 		try (DatabaseHelper dbHelper = new DatabaseHelper(this)) {
 			sks = dbHelper.getAllSKs();
@@ -54,13 +56,16 @@ public class ICCActivity extends AppCompatActivity {
 		catch (StatusRuntimeException e) {
 			statusTextView.setTextColor(getResources().getColor(R.color.red, getTheme()));
 			if (e.getStatus().getCode() == Status.INVALID_ARGUMENT.getCode()) {
+				Log.d(TAG, "Hub rejected ICC: " + icc);
 				statusTextView.setText("Invalid Infection Claim Code!");
 			}
 			else {
+				Log.e(TAG, "Infection claim failed: " + e.getMessage());
 				statusTextView.setText("Something went wrong...");
 			}
 		}
 		catch (CertificateException | NoSuchAlgorithmException | KeyStoreException | IOException | KeyManagementException e) {
+			Log.e(TAG, "Infection claim failed: " + e.getMessage());
 			statusTextView.setText("Something went incredibly wrong...");
 		}
 	}

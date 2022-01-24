@@ -3,6 +3,7 @@ package com.example.app.activities;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -34,6 +35,7 @@ public class ShowContactsActivity extends AppCompatActivity {
 			contacts = dbHelper.getInfectedContacts(password);
 		} catch (PasswordCheckFailedException | NoSuchAlgorithmException e) {
 			e.printStackTrace();
+			Log.e(TAG, "Failed to get infected contacts due to: " + e.getMessage());
 			Toast.makeText(this, "Internal error occured", Toast.LENGTH_SHORT).show();
 			finish();
 			return;
@@ -42,6 +44,7 @@ public class ShowContactsActivity extends AppCompatActivity {
 		for (DatabaseHelper.ContactInfo contact : contacts) {
 			String sb = EpochHelper.getDateFromIntervalN(contact.intervalN) + "\n" +
 					getLocationString(contact.latitude, contact.longitude);
+			Log.d(TAG, "Showing contact: " + sb);
 			contactsStrings.add(sb);
 		}
 		ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, contactsStrings);
@@ -84,9 +87,12 @@ public class ShowContactsActivity extends AppCompatActivity {
 			}
 			sb.append(knownName);
 
-			return (sb.toString().equals("Unknown, Unknown, Unknown, Unknown, Unknown")) ? "Unknown" : sb.toString();
+			String res = (sb.toString().equals("Unknown, Unknown, Unknown, Unknown, Unknown")) ? "Unknown" : sb.toString();
+			Log.d(TAG, "Got location string: " + res);
+			return res;
 		}
 		catch (IOException e) {
+			Log.e(TAG, "Failed to get location string due to: " + e.getMessage());
 			e.printStackTrace();
 			return "Unknown";
 		}
