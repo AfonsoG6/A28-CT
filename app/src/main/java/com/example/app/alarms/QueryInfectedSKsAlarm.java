@@ -5,7 +5,6 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.os.SystemClock;
 import android.util.Log;
 import android.widget.Toast;
 import com.example.app.ContactTracingService;
@@ -26,12 +25,10 @@ public class QueryInfectedSKsAlarm extends BroadcastReceiver {
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		Log.i("QueryInfectedSKsAlarm", "onReceive");
-		Toast.makeText(context, "QueryInfectedSKsAlarm", Toast.LENGTH_LONG).show();
-		service.getIncomingMsgManager().queryInfectedSks();
+		Toast.makeText(context, "Querying Hub for Infected SKs", Toast.LENGTH_LONG).show();
+		service.queryInfectedSks();
 		setAlarm(context);
 	}
-
-
 
 	public void setAlarm(Context context) {
 		Calendar calendar = Calendar.getInstance();

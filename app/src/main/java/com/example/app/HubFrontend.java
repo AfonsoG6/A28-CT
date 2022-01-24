@@ -18,8 +18,6 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.charset.spi.CharsetProvider;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -127,10 +125,10 @@ public class HubFrontend {
 		return new String(dummyIcc);
 	}
 
-	public Hub.QueryInfectedSKsResponse queryInfectedSKs() throws StatusRuntimeException{
+	public Hub.QueryInfectedSKsResponse queryInfectedSKs(long lastQueryEpoch) throws StatusRuntimeException{
 		ManagedChannel channel = buildChannel();
 		HubServiceGrpc.HubServiceBlockingStub stub = HubServiceGrpc.newBlockingStub(channel);
-		Hub.QueryInfectedSKsRequest request = Hub.QueryInfectedSKsRequest.newBuilder().setLastQueryEpoch(0).build(); //TODO EPOCH
+		Hub.QueryInfectedSKsRequest request = Hub.QueryInfectedSKsRequest.newBuilder().setLastQueryEpoch(lastQueryEpoch).build();
 		Hub.QueryInfectedSKsResponse response = stub.withDeadlineAfter(5, TimeUnit.SECONDS).queryInfectedSKs(request);
 		channel.shutdown();
 		return response;

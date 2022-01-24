@@ -1,57 +1,38 @@
 package com.example.app;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
+import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
-import android.view.View;
-import android.widget.TextView;
 import androidx.core.content.ContextCompat;
 import com.example.app.activities.MainActivity;
 import com.example.app.bluetooth.BleMessage;
 import com.example.app.helpers.DatabaseHelper;
+import com.example.app.helpers.EpochHelper;
+import com.example.app.helpers.SKHelper;
+import com.example.app.helpers.SharedPrefsHelper;
 import com.example.hub.grpc.Hub;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
 import java.util.List;
 
 public class IncomingMsgManager {
-	//TODO: Implement Receiving Contact Messages
-	//TODO: Implement Insert received (msg, intervalN) in Database
-	//TODO: Implement Store current location when message received
-	//TODO: Implement Query Hub for Infected SKs
-	//TODO: Generate all Msgs from received SKs
-	//TODO: Search database for matching entries
-	//TODO: Send notification of infection to user
+    private static final String TAG = "IncomingMsgManager";
 
-    private final Context context;
-    private static final int NUM_OF_INTERVALS = 288;
-    private static final int SECONDS_TO_UPDATE_MSG = 300; // 5min = 5*60s
-    private static final int SECONDS_IN_DAY = 86400;
-    private static final int SK_DELETED_AFTER_DAYS = 14;
+	private final Context context;
 
     public IncomingMsgManager(Context context) {
         this.context = context;
-    }
-
-    private long getEpochTime() {
-        return Calendar.getInstance().getTimeInMillis()/1000;
-    }
-
-    private long getEpochDay() {
-        return getEpochTime()/SECONDS_IN_DAY;
     }
 
     public boolean addMessageToDatabase(byte[] data) {
@@ -84,47 +65,68 @@ public class IncomingMsgManager {
         return context.getSystemService(LocationManager.class).getLastKnownLocation(LocationManager.GPS_PROVIDER);
     }
 
-    private boolean hadContact(ArrayList<DatabaseHelper.receivedMsg> msgList, List<Hub.SKEpochDayPair> extPairs) throws IOException, NoSuchAlgorithmException {
+    private boolean inRiskOfInfection(List<Hub.SKEpochDayPair> extPairs) throws IOException, NoSuchAlgorithmException {
+        int numContacts;
+        try (DatabaseHelper dbHelper = new DatabaseHelper(context)) {
+            dbHelper.deleteOldRecvdMsgs();
+            numContacts = dbHelper.getNumContacts();
+        }
         for(Hub.SKEpochDayPair pair : extPairs) {
-            int num_contacts = 0;
-            for(DatabaseHelper.receivedMsg msg : msgList) {
-                System.out.println("Received SK:" + " " + new String(pair.getSk().toByteArray(), StandardCharsets.UTF_8));
-                System.out.println("\nSQLite SK: " + " " + new String(msg.getMsg(), StandardCharsets.UTF_8));
+            long epochDay = pair.getEpochDay();
+            byte[] sk = pair.getSk().toByteArray();
+            long firstIntervalN = EpochHelper.getFirstIntervalOfDay(epochDay);
+            long lastIntervalN = EpochHelper.getLastIntervalOfDay(epochDay);
 
-                int firstIntervalN = pair.getEpochDay()*SECONDS_IN_DAY/SECONDS_TO_UPDATE_MSG;
-
-                for(int i=firstIntervalN; i!=firstIntervalN+NUM_OF_INTERVALS; i++) {
-                    byte[] intervalNBytes = ByteBuffer.allocate(8).putLong(i).array();
-                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
-                    outputStream.write(pair.getSk().toByteArray());
-                    outputStream.write(intervalNBytes);
-                    byte[] toHash = outputStream.toByteArray();
-                    MessageDigest digest = MessageDigest.getInstance("SHA-256");
-                    byte[] currentMsg = digest.digest(toHash);
-
-                    if(Arrays.equals(currentMsg,msg.getMsg()))
-                        num_contacts++;
+            for (long intervalN = firstIntervalN; intervalN <= lastIntervalN; intervalN++) {
+                byte[] currentMsg = SKHelper.generateMsg(sk, intervalN);
+                try (DatabaseHelper dbHelper = new DatabaseHelper(context)) {
+                    if (dbHelper.existsRecvdMessage(currentMsg, intervalN)) {
+                        dbHelper.updateContact(currentMsg, intervalN);
+                        numContacts++;
+                    }
                 }
             }
-            System.out.println("Number of contacts: " + num_contacts);
-            if (num_contacts >= 6)
-                return true;
         }
-        return false;
+        return numContacts >= 6;
+    }
+
+    private void sendInfectionNotification() {
+        Intent notificationIntent = new Intent(context, MainActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, notificationIntent, 0);
+
+        NotificationChannel channel = new NotificationChannel("ct_infection", context.getText(R.string.ct_infection_title), NotificationManager.IMPORTANCE_DEFAULT);
+        channel.setDescription(context.getText(R.string.ct_infection_text).toString());
+        channel.enableLights(true);
+        channel.setLightColor(Color.BLUE);
+        NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
+        notificationManager.createNotificationChannel(channel);
+
+        Notification notification = new Notification.Builder(context, channel.getId())
+                .setOngoing(true)
+                .setContentTitle(context.getText(R.string.ct_infection_title))
+                .setContentText(context.getText(R.string.ct_infection_text))
+                .setContentIntent(pendingIntent)
+                .setTicker(context.getText(R.string.ct_infection_ticker))
+                .build();
+
+        synchronized (this) {
+            notification.notifyAll();
+        }
     }
 
     public boolean queryInfectedSks() {
-        System.out.println("Querying");
         try {
+            SharedPrefsHelper spHelper = new SharedPrefsHelper(context);
             HubFrontend frontend = HubFrontend.getInstance(context);
-            Hub.QueryInfectedSKsResponse response = frontend.queryInfectedSKs();
-            System.out.println("SIZE OF RECEIVED SKS: "+response.getSksList().size());
-            DatabaseHelper dbHelper = new DatabaseHelper(context); //TODO secondary thread
+            Hub.QueryInfectedSKsResponse response = frontend.queryInfectedSKs(spHelper.getLastQueryEpoch());
+            spHelper.setLastQueryEpoch(response.getQueryEpoch());
 
-            ArrayList<DatabaseHelper.receivedMsg> localMsgs = dbHelper.getAllSks(getEpochDay());
             List<Hub.SKEpochDayPair> extSks = response.getSksList();
-            boolean contact = hadContact(localMsgs, extSks);
-            return contact;
+            boolean inRisk = inRiskOfInfection(extSks);
+            if (inRisk) {
+                sendInfectionNotification();
+            }
+            return inRisk;
         }
         catch (CertificateException | NoSuchAlgorithmException | KeyStoreException | IOException | KeyManagementException e) {
             e.printStackTrace();

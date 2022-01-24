@@ -3,10 +3,8 @@ package com.example.app;
 import android.app.*;
 import android.content.Intent;
 import android.graphics.Color;
-import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
-import android.view.View;
 import android.widget.Toast;
 import androidx.annotation.Nullable;
 import com.example.app.activities.MainActivity;
@@ -15,8 +13,6 @@ import com.example.app.alarms.SendContactMsgAlarm;
 import com.example.app.alarms.SendDummyICCMsgAlarm;
 import com.example.app.bluetooth.ContactServer;
 import com.example.app.exceptions.DatabaseInsertionFailedException;
-import com.example.app.helpers.DatabaseHelper;
-import com.example.hub.grpc.Hub;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
@@ -44,10 +40,10 @@ public class ContactTracingService extends Service {
 			ContactServer.startServer(this);
 			outMsgManager = new OutgoingMsgManager(getApplicationContext());
 		}
-		catch (NoSuchAlgorithmException | DatabaseInsertionFailedException e) {
+		catch (NoSuchAlgorithmException | DatabaseInsertionFailedException | IOException e) {
 			e.printStackTrace();
 		}
-    queryInfectedSKsAlarm = new QueryInfectedSKsAlarm(this);
+		queryInfectedSKsAlarm = new QueryInfectedSKsAlarm(this);
 		sendContactMsgAlarm = new SendContactMsgAlarm(this);
 		sendDummyICCMsgAlarm = new SendDummyICCMsgAlarm(this);
 	}
@@ -69,7 +65,7 @@ public class ContactTracingService extends Service {
 
 	private void setAlarms() {
 		queryInfectedSKsAlarm.setAlarm(this);
-		//sendContactMsgAlarm.setAlarm(this);
+		sendContactMsgAlarm.setAlarm(this);
 		sendDummyICCMsgAlarm.setAlarm(this);
 	}
 
@@ -97,15 +93,6 @@ public class ContactTracingService extends Service {
 				.build();
 	}
 
-	public IncomingMsgManager getIncomingMsgManager() {
-		return inMsgManager;
-	}
-
-	public OutgoingMsgManager getOutgoingMsgManager() {
-		return outMsgManager;
-	}
-
-
 	public void sendDummyICCMsg() {
 		try {
 			HubFrontend hubFrontend = HubFrontend.getInstance(this);
@@ -122,5 +109,9 @@ public class ContactTracingService extends Service {
 		} catch (DatabaseInsertionFailedException | NoSuchAlgorithmException | IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public void queryInfectedSks() {
+		inMsgManager.queryInfectedSks();
 	}
 }

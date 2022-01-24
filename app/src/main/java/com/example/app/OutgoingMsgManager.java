@@ -9,36 +9,25 @@ import com.example.app.bluetooth.ContactServer;
 import com.example.app.exceptions.DatabaseInsertionFailedException;
 import com.example.app.exceptions.NotFoundInDatabaseException;
 import com.example.app.helpers.DatabaseHelper;
+import com.example.app.helpers.EpochHelper;
+import com.example.app.helpers.SKHelper;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.util.Calendar;
 
 public class OutgoingMsgManager {
-
-	private static final int SECONDS_TO_UPDATE_MSG = 300; // 5min = 5*60s
-	private static final int SECONDS_IN_DAY = 86400;
-	private static final int SK_DELETED_AFTER_DAYS = 14;
 
 	private byte[] currentSK;
 	private long currentSKEpochDay;
 	private byte[] currentMsg;
 	private long currentMsgIntervalN;
 
-	public OutgoingMsgManager(Context context) throws NoSuchAlgorithmException, DatabaseInsertionFailedException {
+	public OutgoingMsgManager(Context context)
+			throws NoSuchAlgorithmException, DatabaseInsertionFailedException, IOException {
 		updateCurrentSK(context);
-	}
-
-	private long getEpochTime() {
-		return Calendar.getInstance().getTimeInMillis()/1000;
-	}
-
-	private long getEpochDay() {
-		return getEpochTime()/SECONDS_IN_DAY;
+		updateCurrentMsg(context);
 	}
 
 	private byte[] generateNewSK() throws NoSuchAlgorithmException {
@@ -68,14 +57,13 @@ public class OutgoingMsgManager {
 	}
 
 	public void cleanOldSKs(Context context) {
-		long epochDay = getEpochDay();
 		try (DatabaseHelper dbHelper = new DatabaseHelper(context)) {
-			dbHelper.deleteSKsBefore(epochDay - SK_DELETED_AFTER_DAYS);
+			dbHelper.deleteOldSKs();
 		}
 	}
 
 	private void updateCurrentSK(Context context) throws NoSuchAlgorithmException, DatabaseInsertionFailedException {
-		long epochdayToday = getEpochDay();
+		long epochdayToday = EpochHelper.getCurrentEpochDay();
 		cleanOldSKs(context);
 		// Try to get TODAY's SK from database
 		try {
@@ -101,31 +89,22 @@ public class OutgoingMsgManager {
 
 	private void updateCurrentMsg(Context context)
 			throws NoSuchAlgorithmException, IOException, DatabaseInsertionFailedException {
-		long epochTime = getEpochTime();
-		long epochDay = getEpochDay();
+		long epochDay = EpochHelper.getCurrentEpochDay();
 
 		// Calculate the time interval that we're currently at and check if already using the correct Msg.
-		long intervalN = epochTime/SECONDS_TO_UPDATE_MSG;
+		long intervalN = EpochHelper.getCurrentInterval();
 
 		if (epochDay == currentSKEpochDay && intervalN == currentMsgIntervalN) return; // currentMsg is up-to-date
 
 		if (epochDay != currentSKEpochDay) updateCurrentSK(context);
 
-		byte[] intervalNBytes = ByteBuffer.allocate(8).putLong(intervalN).array();
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
-		outputStream.write(currentSK);
-		outputStream.write(intervalNBytes);
-		byte[] toHash = outputStream.toByteArray();
-
-		MessageDigest digest = MessageDigest.getInstance("SHA-256");
-		currentMsg = digest.digest(toHash);
+		currentMsg = SKHelper.generateMsg(currentSK, intervalN);
 		currentMsgIntervalN = intervalN;
 	}
 
 	public void sendContactMsg(Context context)
 			throws DatabaseInsertionFailedException, NoSuchAlgorithmException, IOException {
 		updateCurrentMsg(context);
-		//TODO: Use Bluetooth LE to send currentMsg and ?currentMsgIntervalN?
 		byte[] message = new BleMessage(this.currentMsg, this.currentMsgIntervalN).toByteArray();
 		new Thread() {
 			@Override
