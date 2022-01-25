@@ -64,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
 		} else {
 			statusTextView.setTextColor(Color.GREEN);
 			statusTextView.setText("No detected contact.");
+			findViewById(R.id.checkContactsButton).setEnabled(false);
 		}
 	}
 
