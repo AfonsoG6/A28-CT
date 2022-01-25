@@ -1,5 +1,6 @@
 package com.example.app.activities;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.InputFilter;
 import android.util.Log;
@@ -40,7 +41,7 @@ public class ICCActivity extends AppCompatActivity {
 	}
 
 	public void onSubmitInfectionClaim(View view) {
-		statusTextView.setTextColor(getResources().getColor(R.color.white, getTheme()));
+		statusTextView.setTextColor(Color.WHITE);
 		statusTextView.setText("Sending Infection Claim...");
 		statusTextView.setVisibility(View.VISIBLE);
 		String icc = iccTextBox.getText().toString().trim().replace("-", "");
@@ -52,9 +53,12 @@ public class ICCActivity extends AppCompatActivity {
 		try {
 			HubFrontend frontend = HubFrontend.getInstance(getApplicationContext());
 			frontend.claimInfection(false, icc, sks);
+			Log.i(TAG, "Successfully sent infection claim to Hub");
+			statusTextView.setTextColor(Color.GREEN);
+			statusTextView.setText("Success!");
 		}
 		catch (StatusRuntimeException e) {
-			statusTextView.setTextColor(getResources().getColor(R.color.red, getTheme()));
+			statusTextView.setTextColor(Color.RED);
 			if (e.getStatus().getCode() == Status.INVALID_ARGUMENT.getCode()) {
 				Log.d(TAG, "Hub rejected ICC: " + icc);
 				statusTextView.setText("Invalid Infection Claim Code!");
@@ -66,6 +70,7 @@ public class ICCActivity extends AppCompatActivity {
 		}
 		catch (CertificateException | NoSuchAlgorithmException | KeyStoreException | IOException | KeyManagementException e) {
 			Log.e(TAG, "Infection claim failed: " + e.getMessage());
+			statusTextView.setTextColor(Color.RED);
 			statusTextView.setText("Something went incredibly wrong...");
 		}
 	}
