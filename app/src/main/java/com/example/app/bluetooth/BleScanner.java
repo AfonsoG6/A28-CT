@@ -27,7 +27,7 @@ public class BleScanner {
                 public void onScanResult(int callbackType, ScanResult result) {
                     super.onScanResult(callbackType, result);
                     BluetoothDevice device = result.getDevice();
-                    Log.i(TAG, "Found device: " + device.getName() + " " + device.getAddress());
+                    Log.i(TAG, "Found device: " + device.getAddress());
                     scanResults.add(result.getDevice());
                 }
             };
