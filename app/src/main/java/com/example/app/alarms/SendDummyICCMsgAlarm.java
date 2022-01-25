@@ -16,7 +16,7 @@ import java.util.Random;
 
 public class SendDummyICCMsgAlarm extends BroadcastReceiver {
 	private static final String TAG = SendDummyICCMsgAlarm.class.getName();
-	private static String ACTION_ALARM = "ALARM";
+	private static final String ACTION_ALARM = "ALARM";
 	private static final Random random = new Random();
 
 	private ContactTracingService service;

@@ -15,7 +15,7 @@ import java.util.Calendar;
 
 public class SendContactMsgAlarm extends BroadcastReceiver {
 	private static final String TAG = SendContactMsgAlarm.class.getName();
-	private static String ACTION_ALARM = "ALARM";
+	private static final String ACTION_ALARM = "ALARM";
 	private static final long INTERVAL = AlarmManager.INTERVAL_FIFTEEN_MINUTES/15;
 
 	private ContactTracingService service;

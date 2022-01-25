@@ -15,7 +15,7 @@ import java.util.Calendar;
 
 public class QueryInfectedSKsAlarm extends BroadcastReceiver {
 	private static final String TAG = QueryInfectedSKsAlarm.class.getName();
-	private static String ACTION_ALARM = "ALARM";
+	private static final String ACTION_ALARM = "ALARM";
 	private static final long INTERVAL = 4 * AlarmManager.INTERVAL_HOUR;
 
 	private ContactTracingService service;

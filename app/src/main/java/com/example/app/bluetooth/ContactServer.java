@@ -60,7 +60,7 @@ public class ContactServer {
 
             boolean success = device.getGatt().writeCharacteristic(device.getCharacteristic());
             if (!success) {
-                Log.w(TAG, "Could not send message to device: " + device.getGatt().getDevice().getName());
+                Log.w(TAG, "Could not send message to device: " + device.getGatt().getDevice().getAddress());
             }
         }
     }
@@ -114,7 +114,7 @@ public class ContactServer {
         public void onConnectionStateChange(BluetoothDevice device, int status, int newState) {
             super.onConnectionStateChange(device, status, newState);
             if (status == BluetoothGatt.GATT_SUCCESS && newState == BluetoothProfile.STATE_CONNECTED)
-                Log.i(TAG, "Started connection with client " + device.getName());
+                Log.i(TAG, "Started connection with client " + device.getAddress());
         }
 
         @Override
@@ -131,7 +131,7 @@ public class ContactServer {
                     device, requestId, characteristic, preparedWrite, responseNeeded, offset, value
             );
 
-            Log.i(TAG, "Received message from " + device.getName());
+            Log.i(TAG, "Received message from " + device.getAddress());
 
             if (characteristic.getUuid() == MESSAGE_UUID) {
                 gattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, null);
@@ -162,9 +162,10 @@ public class ContactServer {
             super.onConnectionStateChange(gatt, status, newState);
             boolean isSuccess = status == BluetoothGatt.GATT_SUCCESS;
             boolean isConnected = newState == BluetoothProfile.STATE_CONNECTED;
-            if (isSuccess && isConnected)
-                Log.i(TAG, "Connected to gatt server: " + gatt.getDevice().getName());
+            if (isSuccess && isConnected) {
+                Log.i(TAG, "Connected to gatt server: " + gatt.getDevice().getAddress());
                 gatt.discoverServices();
+            }
         }
 
         @Override
@@ -173,12 +174,12 @@ public class ContactServer {
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 BluetoothGattService service = gatt.getService(SERVICE_UUID);
                 if (service == null) {
-                    Log.i(TAG, "Device doesn't have service: " + gatt.getDevice().getName());
+                    Log.i(TAG, "Device doesn't have service: " + gatt.getDevice().getAddress());
                     return;
                 }
                 BluetoothGattCharacteristic characteristic = service.getCharacteristic(MESSAGE_UUID);
                 if (characteristic == null) {
-                    Log.i(TAG, "Device doesn't have characteristic: " + gatt.getDevice().getName());
+                    Log.i(TAG, "Device doesn't have characteristic: " + gatt.getDevice().getAddress());
                     return;
                 }
                 connectedDevices.add(new ConnectedDevice(gatt, characteristic));
