@@ -11,6 +11,7 @@ import android.util.Log;
 import com.example.app.IncomingMsgManager;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static com.example.app.Constants.MESSAGE_UUID;
@@ -54,6 +55,7 @@ public class ContactServer {
     }
 
     public static void sendMessage(byte[] message) {
+        Log.i(TAG, "Sending message " + Arrays.toString(message));
         for (ConnectedDevice device: connectedDevices) {
             device.getCharacteristic().setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
             device.getCharacteristic().setValue(message);
@@ -130,8 +132,7 @@ public class ContactServer {
             super.onCharacteristicWriteRequest(
                     device, requestId, characteristic, preparedWrite, responseNeeded, offset, value
             );
-
-            Log.i(TAG, "Received message from " + device.getAddress());
+            Log.i(TAG, "Received message" + Arrays.toString(value) + " from " + device.getAddress());
 
             if (characteristic.getUuid() == MESSAGE_UUID) {
                 gattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, null);
@@ -164,8 +165,15 @@ public class ContactServer {
             boolean isConnected = newState == BluetoothProfile.STATE_CONNECTED;
             if (isSuccess && isConnected) {
                 Log.i(TAG, "Connected to gatt server: " + gatt.getDevice().getAddress());
+                gatt.requestMtu(256);
                 gatt.discoverServices();
             }
+        }
+
+        @Override
+        public void onMtuChanged(BluetoothGatt gatt, int mtu, int status) {
+            super.onMtuChanged(gatt, mtu, status);
+            Log.i(TAG, "Changed MTU: " + mtu + " " + status);
         }
 
         @Override
