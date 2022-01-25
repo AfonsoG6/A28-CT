@@ -54,6 +54,14 @@
                 app:layout_constraintBottom_toTopOf="@+id/imageView"
                 android:textAlignment="center" android:textAllCaps="true" app:layout_constraintTop_toTopOf="parent"
                 android:textSize="24sp" android:visibility="visible" app:layout_constraintVertical_bias="1.0"/>
+    <Button
+            android:text="Check Infection Threats"
+            android:layout_width="216dp"
+            android:layout_height="57dp" android:id="@+id/checkContactsButton"
+            app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/exposedStatusText"
+            app:layout_constraintBottom_toTopOf="@+id/imageView" app:layout_constraintVertical_bias="0.112"
+            android:onClick="onClickCheckThreats" android:visibility="visible" android:enabled="false"/>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

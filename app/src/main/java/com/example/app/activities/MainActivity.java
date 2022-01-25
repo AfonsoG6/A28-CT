@@ -60,12 +60,17 @@ public class MainActivity extends AppCompatActivity {
 		if (isInfected) {
 			statusTextView.setTextColor(Color.RED);
 			statusTextView.setText("Possible Infection!");
+			findViewById(R.id.checkContactsButton).setEnabled(true);
 		} else {
 			statusTextView.setTextColor(Color.GREEN);
 			statusTextView.setText("No detected contact.");
 		}
 	}
 
+	public void onClickCheckThreats(View view) {
+		Intent intent = new Intent(this, SetPasswordActivity.class);
+		startActivity(intent);
+	}
 
 	public void onClickClaimInfection(View view) {
 		Intent intent = new Intent(this, ICCActivity.class);
