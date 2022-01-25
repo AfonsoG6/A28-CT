@@ -48,15 +48,4 @@ public class InfectedSKManager {
 		}
 		return infectedSKs;
 	}
-
-	public static long queryMaxInsEpoch() throws SQLException {
-		Connection conn = PostgreSQLJDBC.getConnection();
-		String stmtString = "SELECT MAX(ins_epoch) FROM infected_sks;";
-
-		PreparedStatement stmt = conn.prepareStatement(stmtString);
-		ResultSet rs = stmt.executeQuery();
-		if (!rs.next()) return 0;
-
-		return rs.getInt(1);
-	}
 }

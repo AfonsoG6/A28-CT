@@ -25,7 +25,7 @@ public class HubServiceImpl extends HubServiceGrpc.HubServiceImplBase {
 		// Build Response
 		PingResponse.Builder builder = PingResponse.newBuilder();
 		String content = request.getContent();
-		if (content.isBlank()) {
+		if (content.isEmpty()) {
 			responseObserver.onError(INVALID_ARGUMENT.withDescription("Input cannot be empty!").asRuntimeException());
 			return;
 		}
@@ -113,11 +113,11 @@ public class HubServiceImpl extends HubServiceGrpc.HubServiceImplBase {
 		}
 
 		try {
-			long maxInsEpoch = InfectedSKManager.queryMaxInsEpoch();
+			long epoch = System.currentTimeMillis() / 1000;
 			List<SKEpochDayPair> sks = InfectedSKManager.queryInfectedSKs(request.getLastQueryEpoch());
 			QueryInfectedSKsResponse response = QueryInfectedSKsResponse.newBuilder()
 					.addAllSks(sks)
-					.setQueryEpoch(maxInsEpoch)
+					.setQueryEpoch(epoch)
 					.build();
 			responseObserver.onNext(response);
 			responseObserver.onCompleted();
