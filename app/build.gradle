@@ -60,6 +60,7 @@ dependencies {
     implementation 'org.apache.commons:commons-lang3:3.0'
 
     // https://mvnrepository.com/artifact/org.projectlombok/lombok
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
     compileOnly 'org.projectlombok:lombok:1.18.22'
 
 
