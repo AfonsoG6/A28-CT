@@ -6,6 +6,7 @@ import com.example.app.exceptions.DecryptionFailedException;
 import com.example.app.exceptions.PasswordCheckFailedException;
 import com.example.app.exceptions.PasswordSetFailedException;
 import com.example.app.helpers.SharedPrefsHelper;
+import org.conscrypt.Conscrypt;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -29,6 +30,7 @@ public class SecureStorageManager {
 	private SharedPrefsHelper spHelper;
 
 	public SecureStorageManager(Context context) throws NoSuchAlgorithmException {
+		Security.insertProviderAt(Conscrypt.newProvider(), Security.getProviders().length);
 		secureRandom = SecureRandom.getInstanceStrong();
 		spHelper = new SharedPrefsHelper(context);
 	}
@@ -155,7 +157,7 @@ public class SecureStorageManager {
 	public byte[] encryptValue(double value) {
 		try {
 			byte[] publicKeyBytes = spHelper.getPublicKey();
-			Cipher cipher = Cipher.getInstance("RSA/CBC/OAEP");
+			Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
 			PublicKey publicKey = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(publicKeyBytes));
 			cipher.init(Cipher.ENCRYPT_MODE, publicKey);
 			byte[] valueBytes = ByteBuffer.allocate(8).putDouble(value).array();
@@ -172,7 +174,7 @@ public class SecureStorageManager {
 
 	public double decryptValue(byte[] privateKey, byte[] value) throws DecryptionFailedException {
 		try {
-			Cipher cipher = Cipher.getInstance("RSA/CBC/OAEP");
+			Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
 			PrivateKey privateKeyObject = KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(privateKey));
 			cipher.init(Cipher.DECRYPT_MODE, privateKeyObject);
 			byte[] decryptedValue = cipher.doFinal(value);
