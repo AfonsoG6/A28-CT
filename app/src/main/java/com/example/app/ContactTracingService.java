@@ -83,6 +83,7 @@ public class ContactTracingService extends Service {
 
 		return new Notification.Builder(this, channel.getId())
 				.setOngoing(true)
+				.setSmallIcon(R.mipmap.a28_ct)
 				.setContentTitle(getText(R.string.ct_service_title))
 				.setContentText(getText(R.string.ct_service_text))
 				.setContentIntent(pendingIntent)
@@ -112,7 +113,7 @@ public class ContactTracingService extends Service {
 	}
 
 	public void queryInfectedSks() {
-		inMsgManager.queryInfectedSks();
+		inMsgManager.queryInfectedSks(true);
 	}
 
 }

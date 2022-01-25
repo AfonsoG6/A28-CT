@@ -92,9 +92,7 @@ public class SecureStorageManager {
 		Log.d(TAG, "Generated Public Key: " + Arrays.toString(publicKey));
 		byte[] privateKey = keyPair.getPrivate().getEncoded();
 		Log.d(TAG, "Generated Private Key: " + Arrays.toString(privateKey));
-		byte[] extendedObfHash = extendHash(obfHash, privateKey.length);
-		Log.d(TAG, "Generated Extended Obfuscation Hash: " + Arrays.toString(extendedObfHash));
-		byte[] obfPrivKey = obfuscate(privateKey, extendedObfHash);
+		byte[] obfPrivKey = obfuscate(privateKey, obfHash);
 		Log.d(TAG, "Calculated Obfuscated Private Key: " + Arrays.toString(obfPrivKey));
 
 		spHelper.setObfuscatedPrivateKey(obfPrivKey);
@@ -124,13 +122,24 @@ public class SecureStorageManager {
 	}
 
 	private byte[] obfuscate(byte[] privateKey, byte[] obfHash) throws PasswordSetFailedException {
-		if (obfHash.length != privateKey.length)
-			throw new PasswordSetFailedException("Invalid Obfuscation Hash length (Expected " + privateKey.length + ", got " + obfHash.length + ")");
-		return xorByteArrays(privateKey, obfHash);
+		try {
+			byte[] extendedObfHash = extendHash(obfHash, privateKey.length);
+			if (extendedObfHash.length != privateKey.length) {
+				Log.e(TAG, "Invalid Obfuscation Hash length (Expected " + privateKey.length + ", got " + extendedObfHash.length + ")");
+				throw new PasswordSetFailedException("Invalid Obfuscation Hash length (Expected " + privateKey.length + ", got " + extendedObfHash.length + ")");
+			}
+			return xorByteArrays(privateKey, extendedObfHash);
+		} catch (IOException | NoSuchAlgorithmException e) {
+			throw new PasswordSetFailedException(e);
+		}
 	}
 
-	private byte[] deobfuscate(byte[] privateKey, byte[] obfHash) {
-		return xorByteArrays(privateKey, obfHash);
+	private byte[] deobfuscate(byte[] privateKey, byte[] obfHash) throws IOException, NoSuchAlgorithmException {
+		byte[] extendedObfHash = extendHash(obfHash, privateKey.length);
+		if (obfHash.length != privateKey.length) {
+			Log.e(TAG, "Invalid Obfuscation Hash length (Expected " + privateKey.length + ", got " + obfHash.length + ")");
+		}
+		return xorByteArrays(privateKey, extendedObfHash);
 	}
 
 	private byte[] genSalt() {

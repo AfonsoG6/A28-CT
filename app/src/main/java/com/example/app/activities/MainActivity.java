@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
 		statusTextView.setText("Checking exposed status...");
 		statusTextView.setVisibility(View.VISIBLE);
 
-		boolean isInfected = imm.queryInfectedSks();
+		boolean isInfected = imm.queryInfectedSks(false);
 
 		if (isInfected) {
 			statusTextView.setTextColor(Color.RED);
@@ -69,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	public void onClickCheckThreats(View view) {
-		Intent intent = new Intent(this, SetPasswordActivity.class);
+		Intent intent = new Intent(this, AskPasswordActivity.class);
 		startActivity(intent);
 	}
 

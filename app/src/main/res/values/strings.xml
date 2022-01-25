@@ -2,9 +2,9 @@
     <string name="app_name">A28-CT</string>
     <string name="ct_service_title">CT Service</string>
     <string name="ct_service_text">CT Service is running in the background</string>
-    <string name="ct_service_ticker">Ticker?</string>
+    <string name="ct_service_ticker"> </string>
 
-    <string name="ct_infection_title">CT: Attention!</string>
+    <string name="ct_infection_title">Warning: In risk of infection!</string>
     <string name="ct_infection_text">We found a big number of contacts with infected people, there is a risk of infection!</string>
-    <string name="ct_infection_ticker">Ticker?</string>
+    <string name="ct_infection_ticker"> </string>
 </resources>
