@@ -7,6 +7,7 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 import androidx.annotation.Nullable;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.example.app.activities.MainActivity;
 import com.example.app.alarms.QueryInfectedSKsAlarm;
 import com.example.app.alarms.SendContactMsgAlarm;
@@ -22,14 +23,14 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 
 public class ContactTracingService extends Service {
+	public static final String ACTION_QUERY_INFECTED_SKS = "QUERY_INFECTED_SKS";
+	public static final String ACTION_SEND_DUMMY_ICC_MSG = "SEND_DUMMY_ICC_MSG";
+	public static final String ACTION_SEND_CONTACT_MSG = "SEND_CONTACT_MSG";
+
 	private static final String TAG = ContactTracingService.class.getName();
 
-	@Getter private OutgoingMsgManager outMsgManager;
-	@Getter private IncomingMsgManager inMsgManager;
-
-	private QueryInfectedSKsAlarm queryInfectedSKsAlarm;
-	private SendContactMsgAlarm sendContactMsgAlarm;
-	private SendDummyICCMsgAlarm sendDummyICCMsgAlarm;
+	private OutgoingMsgManager outMsgManager;
+	private IncomingMsgManager inMsgManager;
 
 	@Override
 	public void onCreate() {
@@ -43,14 +44,20 @@ public class ContactTracingService extends Service {
 		catch (NoSuchAlgorithmException | DatabaseInsertionFailedException | IOException e) {
 			e.printStackTrace();
 		}
-		queryInfectedSKsAlarm = new QueryInfectedSKsAlarm(this);
-		sendContactMsgAlarm = new SendContactMsgAlarm(this);
-		sendDummyICCMsgAlarm = new SendDummyICCMsgAlarm(this);
+		QueryInfectedSKsAlarm queryInfectedSKsAlarm = new QueryInfectedSKsAlarm(this);
+		SendContactMsgAlarm sendContactMsgAlarm = new SendContactMsgAlarm(this);
+		SendDummyICCMsgAlarm sendDummyICCMsgAlarm = new SendDummyICCMsgAlarm(this);
+		LocalBroadcastManager lbManager = LocalBroadcastManager.getInstance(this);
+		lbManager.registerReceiver(queryInfectedSKsAlarm, queryInfectedSKsAlarm.getIntentFilter());
+		lbManager.registerReceiver(sendContactMsgAlarm, sendContactMsgAlarm.getIntentFilter());
+		lbManager.registerReceiver(sendDummyICCMsgAlarm, sendDummyICCMsgAlarm.getIntentFilter());
+		queryInfectedSKsAlarm.setAlarm(this);
+		sendContactMsgAlarm.setAlarm(this);
+		sendDummyICCMsgAlarm.setAlarm(this);
 	}
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		setAlarms();
 		startForeground(29, setupNotification());
 		Log.i(TAG, "Starting service");
 		Toast.makeText(this, "CT Service Started", Toast.LENGTH_LONG).show();
@@ -61,12 +68,6 @@ public class ContactTracingService extends Service {
 	@Override
 	public IBinder onBind(Intent intent) {
 		return null;
-	}
-
-	private void setAlarms() {
-		queryInfectedSKsAlarm.setAlarm(this);
-		sendContactMsgAlarm.setAlarm(this);
-		sendDummyICCMsgAlarm.setAlarm(this);
 	}
 
 	private Notification setupNotification() {
@@ -113,4 +114,5 @@ public class ContactTracingService extends Service {
 	public void queryInfectedSks() {
 		inMsgManager.queryInfectedSks();
 	}
+
 }

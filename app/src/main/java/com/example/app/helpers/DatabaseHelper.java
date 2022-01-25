@@ -3,6 +3,7 @@ package com.example.app.helpers;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
@@ -33,11 +34,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	@Override
 	public void onCreate(SQLiteDatabase db) {
-		String stmt = "CREATE TABLE IF NOT EXISTS sks (epoch_day INTEGER PRIMARY KEY NOT NULL, sk BLOB NOT NULL);";
-		db.execSQL(stmt);
-		stmt += "CREATE TABLE IF NOT EXISTS recvd_msgs (intervalN INTEGER NOT NULL, msg BLOB NOT NULL, enc_lat BLOB, enc_long BLOB, infected INTEGER NOT NULL, PRIMARY KEY (intervalN, msg));";
-		db.execSQL(stmt);
-		Log.i(TAG, "Created database tables (sks & recvd_msgs)");
+		try {
+			String stmt = "CREATE TABLE IF NOT EXISTS sks (epoch_day INTEGER PRIMARY KEY NOT NULL, sk BLOB NOT NULL);";
+			db.execSQL(stmt);
+			stmt = "CREATE TABLE IF NOT EXISTS recvd_msgs (interval_n INTEGER NOT NULL, msg BLOB NOT NULL, enc_lat BLOB, enc_long BLOB, infected INTEGER NOT NULL, PRIMARY KEY (interval_n, msg));";
+			db.execSQL(stmt);
+			Log.i(TAG, "Created database tables (sks & recvd_msgs)");
+		}
+		catch (SQLException e) {
+			Log.e(TAG, "Failed to create database tables", e);
+		}
 	}
 
 	/* Don't call this inside onCreate! Or anywhere else where a database is already opened! */
@@ -51,7 +57,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	}
 
 	@Override
-	public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) { /* Empty */ }
+	public void onUpgrade(SQLiteDatabase db, int i, int i1) {
+		try {
+			String stmt = "DROP TABLE IF EXISTS sks;";
+			db.execSQL(stmt);
+			stmt = "DROP TABLE IF EXISTS recvd_msgs;";
+			db.execSQL(stmt);
+			Log.i(TAG, "Dropped database tables (sks & recvd_msgs)");
+		}
+		catch (SQLException e) {
+			Log.e(TAG, "Failed to drop database tables", e);
+		}
+		onCreate(db);
+	}
 
 	public void deleteOldSKs() {
 		long epochDay = EpochHelper.getCurrentEpochDay() - Constants.SK_DELETED_AFTER_DAYS;

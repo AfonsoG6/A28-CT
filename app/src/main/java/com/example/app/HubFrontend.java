@@ -68,7 +68,7 @@ public class HubFrontend {
 	}
 
 	private ManagedChannel buildChannel() {
-		return OkHttpChannelBuilder.forAddress("10.0.2.2", 29292)
+		return OkHttpChannelBuilder.forAddress("192.168.1.95", 29292)
 				.useTransportSecurity()
 				.sslSocketFactory(sslSocketFactory)
 				.hostnameVerifier((hostname, session) -> true) // Ignore hostname verification for now since the server is local

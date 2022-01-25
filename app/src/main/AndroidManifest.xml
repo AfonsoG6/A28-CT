@@ -55,20 +55,17 @@
         <receiver
             android:name=".alarms.QueryInfectedSKsAlarm"
             android:enabled="true"
-            android:exported="false"
-            android:process=":remote" >
+            android:exported="false" >
         </receiver>
         <receiver
             android:name=".alarms.SendContactMsgAlarm"
             android:enabled="true"
-            android:exported="false"
-            android:process=":remote" >
+            android:exported="false" >
         </receiver>
         <receiver
             android:name=".alarms.SendDummyICCMsgAlarm"
             android:enabled="true"
-            android:exported="false"
-            android:process=":remote" >
+            android:exported="false" >
         </receiver>
         <service
             android:name=".ContactTracingService"
