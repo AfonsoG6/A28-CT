@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
+import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
@@ -79,6 +80,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			String[] args = {String.valueOf(epochDay)};
 			db.execSQL(stmt, args);
 		}
+		catch (SQLException e) {
+			Log.e(TAG, "Failed to delete old SKs", e);
+		}
 	}
 
 	public boolean insertSK(long epochDay, byte[] sk) {
@@ -90,6 +94,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 			long insert = db.insert("sks", null, cv);
 			return insert >= 0;
+		}
+		catch (SQLiteConstraintException e) {
+			Log.i(TAG, "SK is already in database", e);
+			return true;
+		}
+		catch (SQLException e) {
+			Log.e(TAG, "Failed to insert SK", e);
+			return false;
 		}
 	}
 
@@ -142,6 +154,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			String[] args = {String.valueOf(intervalN)};
 			db.execSQL(stmt, args);
 		}
+		catch (SQLException e) {
+			Log.e(TAG, "Failed to delete old Msgs");
+		}
 	}
 
 	public boolean insertRecvdMessage(byte[] message, long intervalN, byte[] encLat, byte[] encLong) {
@@ -162,6 +177,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			cv.put("infected", 0);
 			long insert = db.insert("recvd_msgs", null, cv);
 			return insert >= 0;
+		}
+		catch (SQLiteConstraintException e) {
+			Log.i(TAG, "Received message already exists in database");
+			return true;
+		}
+		catch (SQLException e) {
+			Log.e(TAG, "Failed to insert received message", e);
+			return false;
 		}
 	}
 
