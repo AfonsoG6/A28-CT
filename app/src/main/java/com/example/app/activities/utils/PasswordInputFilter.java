@@ -6,6 +6,7 @@ import android.text.Spanned;
 import java.util.regex.Pattern;
 
 public class PasswordInputFilter implements InputFilter {
+	private static final String TAG = PasswordInputFilter.class.getName();
 
 	private static final Pattern allowedCharsPattern = Pattern.compile("[a-zA-Z0-9?!@#$%&*_^=]");
 

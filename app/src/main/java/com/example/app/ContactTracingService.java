@@ -7,12 +7,14 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 import androidx.annotation.Nullable;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.example.app.activities.MainActivity;
 import com.example.app.alarms.QueryInfectedSKsAlarm;
 import com.example.app.alarms.SendContactMsgAlarm;
 import com.example.app.alarms.SendDummyICCMsgAlarm;
 import com.example.app.bluetooth.ContactServer;
 import com.example.app.exceptions.DatabaseInsertionFailedException;
+import lombok.Getter;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
@@ -21,15 +23,14 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 
 public class ContactTracingService extends Service {
+	public static final String ACTION_QUERY_INFECTED_SKS = "QUERY_INFECTED_SKS";
+	public static final String ACTION_SEND_DUMMY_ICC_MSG = "SEND_DUMMY_ICC_MSG";
+	public static final String ACTION_SEND_CONTACT_MSG = "SEND_CONTACT_MSG";
 
 	private static final String TAG = ContactTracingService.class.getName();
 
 	private OutgoingMsgManager outMsgManager;
 	private IncomingMsgManager inMsgManager;
-
-	private QueryInfectedSKsAlarm queryInfectedSKsAlarm;
-	private SendContactMsgAlarm sendContactMsgAlarm;
-	private SendDummyICCMsgAlarm sendDummyICCMsgAlarm;
 
 	@Override
 	public void onCreate() {
@@ -43,16 +44,22 @@ public class ContactTracingService extends Service {
 		catch (NoSuchAlgorithmException | DatabaseInsertionFailedException | IOException e) {
 			e.printStackTrace();
 		}
-		queryInfectedSKsAlarm = new QueryInfectedSKsAlarm(this);
-		sendContactMsgAlarm = new SendContactMsgAlarm(this);
-		sendDummyICCMsgAlarm = new SendDummyICCMsgAlarm(this);
+		QueryInfectedSKsAlarm queryInfectedSKsAlarm = new QueryInfectedSKsAlarm(this);
+		SendContactMsgAlarm sendContactMsgAlarm = new SendContactMsgAlarm(this);
+		SendDummyICCMsgAlarm sendDummyICCMsgAlarm = new SendDummyICCMsgAlarm(this);
+		LocalBroadcastManager lbManager = LocalBroadcastManager.getInstance(this);
+		lbManager.registerReceiver(queryInfectedSKsAlarm, queryInfectedSKsAlarm.getIntentFilter());
+		lbManager.registerReceiver(sendContactMsgAlarm, sendContactMsgAlarm.getIntentFilter());
+		lbManager.registerReceiver(sendDummyICCMsgAlarm, sendDummyICCMsgAlarm.getIntentFilter());
+		queryInfectedSKsAlarm.setAlarm(this);
+		sendContactMsgAlarm.setAlarm(this);
+		sendDummyICCMsgAlarm.setAlarm(this);
 	}
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		setAlarms();
 		startForeground(29, setupNotification());
-		Log.i("ContactTracingService", "onStartCommand");
+		Log.i(TAG, "Starting service");
 		Toast.makeText(this, "CT Service Started", Toast.LENGTH_LONG).show();
 		return START_STICKY;
 	}
@@ -61,16 +68,6 @@ public class ContactTracingService extends Service {
 	@Override
 	public IBinder onBind(Intent intent) {
 		return null;
-	}
-
-	private void setAlarms() {
-		queryInfectedSKsAlarm.setAlarm(this);
-		sendContactMsgAlarm.setAlarm(this);
-		sendDummyICCMsgAlarm.setAlarm(this);
-	}
-
-	public boolean getInfectedStatus() {
-		return inMsgManager.queryInfectedSks();
 	}
 
 	private Notification setupNotification() {
@@ -86,6 +83,7 @@ public class ContactTracingService extends Service {
 
 		return new Notification.Builder(this, channel.getId())
 				.setOngoing(true)
+				.setSmallIcon(R.mipmap.a28_ct)
 				.setContentTitle(getText(R.string.ct_service_title))
 				.setContentText(getText(R.string.ct_service_text))
 				.setContentIntent(pendingIntent)
@@ -95,10 +93,12 @@ public class ContactTracingService extends Service {
 
 	public void sendDummyICCMsg() {
 		try {
+			Log.i(TAG, "Sending dummy ICC message");
 			HubFrontend hubFrontend = HubFrontend.getInstance(this);
 			hubFrontend.sendDummyClaimInfection();
 		}
 		catch (NoSuchAlgorithmException | CertificateException | KeyStoreException | IOException | KeyManagementException e) {
+			Log.e(TAG, "Failed to send dummy ICC message due to: " + e.getMessage());
 			e.printStackTrace();
 		}
 	}
@@ -107,11 +107,13 @@ public class ContactTracingService extends Service {
 		try {
 			outMsgManager.sendContactMsg(this);
 		} catch (DatabaseInsertionFailedException | NoSuchAlgorithmException | IOException e) {
+			Log.e(TAG, "Failed to send contact message due to: " + e.getMessage());
 			e.printStackTrace();
 		}
 	}
 
 	public void queryInfectedSks() {
-		inMsgManager.queryInfectedSks();
+		inMsgManager.queryInfectedSks(true);
 	}
+
 }

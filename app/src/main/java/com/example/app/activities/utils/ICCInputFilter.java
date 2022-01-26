@@ -6,6 +6,7 @@ import android.text.Spanned;
 import java.util.regex.Pattern;
 
 public class ICCInputFilter implements InputFilter {
+	private static final String TAG = ICCInputFilter.class.getName();
 
 	private static final Pattern allowedCharsPattern = Pattern.compile("[a-zA-Z0-9]");
 

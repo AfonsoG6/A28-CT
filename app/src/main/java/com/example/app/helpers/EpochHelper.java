@@ -5,6 +5,7 @@ import com.example.app.Constants;
 import java.util.Calendar;
 
 public class EpochHelper {
+	private static final String TAG = EpochHelper.class.getName();
 
 	private EpochHelper() { /* Empty */ }
 
@@ -26,5 +27,11 @@ public class EpochHelper {
 
 	public static long getLastIntervalOfDay(long epochDay) {
 		return getFirstIntervalOfDay(epochDay) + Constants.NUM_OF_INTERVALS_IN_DAY - 1;
+	}
+
+	public static String getDateFromIntervalN(long intervalN) {
+		Calendar cal = Calendar.getInstance();
+		cal.setTimeInMillis(intervalN * Constants.SECONDS_IN_INTERVAL * 1000);
+		return cal.getTime().toString();
 	}
 }

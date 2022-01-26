@@ -19,7 +19,7 @@ import com.example.app.helpers.SharedPrefsHelper;
 import java.security.NoSuchAlgorithmException;
 
 public class SetPasswordActivity extends AppCompatActivity {
-	private static final String TAG = "SetPasswordActivity";
+	private static final String TAG = SetPasswordActivity.class.getName();
 	private static final int MIN_PASSWORD_LENGTH = 8;
 
 	private TextView passwordFeedback;
@@ -53,12 +53,14 @@ public class SetPasswordActivity extends AppCompatActivity {
 		String password = passwordEditText.getText().toString();
 		String confirmPassword = confirmPasswordEditText.getText().toString();
 		if (password.length() < MIN_PASSWORD_LENGTH) {
+			Log.d(TAG, "Password '" + password + "' is too short (" + password.length() + " < " + MIN_PASSWORD_LENGTH + ")");
 			passwordFeedback.setText("Password must be at least "+ MIN_PASSWORD_LENGTH + " characters long");
 			passwordFeedback.setTextColor(Color.RED);
 			passwordFeedback.setVisibility(View.VISIBLE);
 			return;
 		}
 		if (!password.equals(confirmPassword)) {
+			Log.d(TAG, "Passwords do not match (" + password + " != " + confirmPassword + ")");
 			passwordFeedback.setText("Passwords do not match");
 			passwordFeedback.setTextColor(Color.RED);
 			passwordFeedback.setVisibility(View.VISIBLE);
@@ -69,12 +71,14 @@ public class SetPasswordActivity extends AppCompatActivity {
 		}
 		catch (PasswordSetFailedException | NoSuchAlgorithmException e) {
 			e.printStackTrace();
+			Log.e(TAG, "Failed to set password due to " + e.getMessage());
 			passwordFeedback.setText("Internal error occurred");
 			passwordFeedback.setTextColor(Color.RED);
 			passwordFeedback.setVisibility(View.VISIBLE);
 			return;
 		}
 		Toast.makeText(this, "Password set successfully", Toast.LENGTH_SHORT).show();
+		Log.d(TAG, "Password set successfully (" + password + ")");
 		Intent intent = new Intent(this, MainActivity.class);
 		startActivity(intent);
 		finish();

@@ -3,30 +3,52 @@ package com.example.app.activities;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.RecyclerView;
 import com.example.app.R;
+import com.example.app.exceptions.PasswordCheckFailedException;
+import com.example.app.helpers.DatabaseHelper;
+import com.example.app.helpers.EpochHelper;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 public class ShowContactsActivity extends AppCompatActivity {
-	private static final String TAG = "ShowContactsActivity";
-
-	private RecyclerView contactListRecyclerView;
+	private static final String TAG = ShowContactsActivity.class.getName();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_show_contacts);
 
-		contactListRecyclerView = findViewById(R.id.contactListRecyclerView);
-		DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(contactListRecyclerView.getContext(), DividerItemDecoration.VERTICAL);
-		contactListRecyclerView.addItemDecoration(dividerItemDecoration);
+		ListView contactsListView = findViewById(R.id.contactsListView);
 
-		//TODO: Implement the code to show the contacts in the RecyclerView
+		String password = getIntent().getStringExtra("password");
+		List<DatabaseHelper.ContactInfo> contacts;
+		try (DatabaseHelper dbHelper = new DatabaseHelper(this)) {
+			contacts = dbHelper.getInfectedContacts(password);
+		} catch (PasswordCheckFailedException | NoSuchAlgorithmException e) {
+			e.printStackTrace();
+			Log.e(TAG, "Failed to get infected contacts due to: " + e.getMessage());
+			Toast.makeText(this, "Internal error occured", Toast.LENGTH_SHORT).show();
+			finish();
+			return;
+		}
+		List<String> contactsStrings = new ArrayList<>(contacts.size());
+		for (DatabaseHelper.ContactInfo contact : contacts) {
+			String sb = EpochHelper.getDateFromIntervalN(contact.intervalN) + "\n" +
+					getLocationString(contact.latitude, contact.longitude);
+			Log.d(TAG, "Showing contact: " + sb);
+			contactsStrings.add(sb);
+		}
+		ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, contactsStrings);
+		contactsListView.setAdapter(adapter);
 	}
 
 	//Function that receives a latitude and longitude values and returns the corresponding address string
@@ -65,9 +87,12 @@ public class ShowContactsActivity extends AppCompatActivity {
 			}
 			sb.append(knownName);
 
-			return (sb.toString().equals("Unknown, Unknown, Unknown, Unknown, Unknown")) ? "Unknown" : sb.toString();
+			String res = (sb.toString().equals("Unknown, Unknown, Unknown, Unknown, Unknown")) ? "Unknown" : sb.toString();
+			Log.d(TAG, "Got location string: " + res);
+			return res;
 		}
 		catch (IOException e) {
+			Log.e(TAG, "Failed to get location string due to: " + e.getMessage());
 			e.printStackTrace();
 			return "Unknown";
 		}

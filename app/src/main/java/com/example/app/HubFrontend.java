@@ -1,6 +1,7 @@
 package com.example.app;
 
 import android.content.Context;
+import android.util.Log;
 import com.example.hub.grpc.Hub;
 import com.example.hub.grpc.Hub.ClaimInfectionRequest;
 import com.example.hub.grpc.Hub.PingRequest;
@@ -23,15 +24,19 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class HubFrontend {
+	private static final String TAG = HubFrontend.class.getName();
+
 	private static HubFrontend instance; // Singleton
 	private final SSLSocketFactory sslSocketFactory;
 
 	private HubFrontend(Context context) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException,
 			KeyManagementException {
+		Log.i(TAG, "Creating HubFrontend instance");
 		// Install Conscrypt provider
 		Security.insertProviderAt(Conscrypt.newProvider(), Security.getProviders().length);
 
@@ -63,7 +68,7 @@ public class HubFrontend {
 	}
 
 	private ManagedChannel buildChannel() {
-		return OkHttpChannelBuilder.forAddress("10.0.2.2", 29292)
+		return OkHttpChannelBuilder.forAddress("192.168.1.95", 29292)
 				.useTransportSecurity()
 				.sslSocketFactory(sslSocketFactory)
 				.hostnameVerifier((hostname, session) -> true) // Ignore hostname verification for now since the server is local
@@ -72,6 +77,7 @@ public class HubFrontend {
 
 
 	public boolean ping(String content) {
+		Log.d(TAG, "Pinging hub with content: " + content);
 		ManagedChannel channel = buildChannel();
 		HubServiceGrpc.HubServiceBlockingStub stub = HubServiceGrpc.newBlockingStub(channel);
 		PingRequest request = PingRequest.newBuilder().setContent(content).build();
@@ -86,6 +92,7 @@ public class HubFrontend {
 	}
 
 	public void claimInfection(boolean isDummy, String icc, List<SKEpochDayPair> sks) throws StatusRuntimeException {
+		Log.d(TAG, "Claiming infection to Hub with ICC: " + icc);
 		ManagedChannel channel = buildChannel();
 		HubServiceGrpc.HubServiceBlockingStub stub = HubServiceGrpc.newBlockingStub(channel);
 		ClaimInfectionRequest request = ClaimInfectionRequest.newBuilder()
@@ -98,6 +105,7 @@ public class HubFrontend {
 	}
 
 	public void sendDummyClaimInfection() throws NoSuchAlgorithmException, StatusRuntimeException {
+		Log.d(TAG, "Sending dummy infection claim to Hub");
 		SecureRandom random = SecureRandom.getInstanceStrong();
 		String dummyIcc = generateDummyIcc();
 		List<SKEpochDayPair> dummySks = new ArrayList<>();
@@ -122,10 +130,12 @@ public class HubFrontend {
 			int idx = random.nextInt(charset.length);
 			dummyIcc[i] = charset[idx];
 		}
-		return new String(dummyIcc);
+		Log.d(TAG, "Generated dummy ICC: " + Arrays.toString(dummyIcc) + "(length: " + dummyIcc.length + ")");
+		return Arrays.toString(dummyIcc);
 	}
 
-	public Hub.QueryInfectedSKsResponse queryInfectedSKs(long lastQueryEpoch) throws StatusRuntimeException{
+	public Hub.QueryInfectedSKsResponse queryInfectedSKs(long lastQueryEpoch) throws StatusRuntimeException {
+		Log.d(TAG, "Querying Hub for infected SKs since epoch: " + lastQueryEpoch);
 		ManagedChannel channel = buildChannel();
 		HubServiceGrpc.HubServiceBlockingStub stub = HubServiceGrpc.newBlockingStub(channel);
 		Hub.QueryInfectedSKsRequest request = Hub.QueryInfectedSKsRequest.newBuilder().setLastQueryEpoch(lastQueryEpoch).build();

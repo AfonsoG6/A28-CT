@@ -20,10 +20,9 @@
     <uses-feature android:name="android.hardware.bluetooth_le" android:required="true"/>
 
     <application
-        android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/a28_ct"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@mipmap/a28_ct_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.A28CT"
         android:networkSecurityConfig="@xml/network_security_config">
@@ -33,6 +32,14 @@
         </activity>
         <activity
             android:name=".activities.ICCActivity"
+            android:exported="true">
+        </activity>
+        <activity
+            android:name=".activities.AskPasswordActivity"
+            android:exported="true">
+        </activity>
+        <activity
+            android:name=".activities.ShowContactsActivity"
             android:exported="true">
         </activity>
         <activity
@@ -55,20 +62,17 @@
         <receiver
             android:name=".alarms.QueryInfectedSKsAlarm"
             android:enabled="true"
-            android:exported="false"
-            android:process=":remote" >
+            android:exported="false" >
         </receiver>
         <receiver
             android:name=".alarms.SendContactMsgAlarm"
             android:enabled="true"
-            android:exported="false"
-            android:process=":remote" >
+            android:exported="false" >
         </receiver>
         <receiver
             android:name=".alarms.SendDummyICCMsgAlarm"
             android:enabled="true"
-            android:exported="false"
-            android:process=":remote" >
+            android:exported="false" >
         </receiver>
         <service
             android:name=".ContactTracingService"
