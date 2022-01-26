@@ -1,4 +1,5 @@
 #!/bin/bash
+# Run as sudo
 
 openssl genrsa -out server.key
 sudo chmod 400 server.key

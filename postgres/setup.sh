@@ -1,7 +1,6 @@
 #!/bin/bash
-# sudo passwd postgres      -> To setup postgres password
-# su - postgres
-# cd project
+# run as postgres
+# sudo su - postgres
 
 psql -c "DROP DATABASE IF EXISTS sirs;"
 psql -c "CREATE DATABASE sirs;"
