@@ -5,6 +5,8 @@ sudo chmod 400 server.key
 openssl req -new -key server.key -days 3650 -out server.crt -x509 -subj '/C=PT/ST=Lisboa/CN=a28.sirs'
 
 chmod 400 pg_hba.conf
+chmod 640 pg_hba.conf
+chmod 644 postgresql.conf
 sudo chown postgres pg_hba.conf postgresql.conf server.key server.crt
 
 sudo cp pg_hba.conf /etc/postgresql/14/main/
