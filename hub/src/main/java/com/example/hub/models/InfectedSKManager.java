@@ -48,4 +48,13 @@ public class InfectedSKManager {
 		}
 		return infectedSKs;
 	}
+
+	public static void removeExpiredSks(int expirationEpochDay) throws SQLException {
+		Connection conn = PostgreSQLJDBC.getConnection();
+		String stmtString = "DELETE FROM infected_sks WHERE epoch_day < ?;";
+
+		PreparedStatement ps = conn.prepareStatement(stmtString);
+		ps.setInt(1, expirationEpochDay);
+		ps.executeUpdate();
+	}
 }

@@ -1,12 +1,18 @@
 package com.example.hub;
 
 import com.example.hub.database.PostgreSQLJDBC;
+import com.example.hub.task.CleanSkTask;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 
 import java.io.InputStream;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class HubMain {
+
+	private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
 	public static void main(String[] args) throws Exception {
 		if (args.length > 0) {
@@ -14,11 +20,16 @@ public class HubMain {
 			return;
 		}
 		PostgreSQLJDBC.connect();
+		scheduleTasks();
 		int hubPort = 29292;
 		Server server = prepareServer(hubPort);
 		server.start();
 		System.out.println("Server started on port: " + hubPort);
 		server.awaitTermination();
+	}
+
+	private static void scheduleTasks() {
+		scheduler.scheduleAtFixedRate(new CleanSkTask(), 12, 24, TimeUnit.HOURS);
 	}
 
 	private static Server prepareServer(int port) throws Exception {
