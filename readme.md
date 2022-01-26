@@ -26,9 +26,33 @@ There are two main pieces of sensitive information that a contact tracing system
 
 # Geting Started
 
-2 VMs, one for the hub, one for the database
-VMH is connected to the internet and to the switch sw-1
-VMDB is connected only to sw-1
+Tu run this service we will need 2 virtual machines running [Ubuntu 20.04.3 LTS](https://ubuntu.com/download/desktop)
+
+One of these VMs, which we'll call VMH, will be running the Hub.
+The other one, which we'll call VMDB, will be running the PostgreSQL database.
+
+Step-by-step instructions:
+
+1. Create a new Ubuntu (64-bit) VM, call it `VMH`
+2. Install [Ubuntu 20.04.3 LTS](https://ubuntu.com/download/desktop) (Minimal installation is enough).
+3. Navigate to **Settings > General > Advanced**, and set both **Shared Clipboard** and **Drag'n'Drop** to `Bidirectional`.
+4. Boot the VM and open a terminal.
+5. Run the command `sudo apt update && sudo apt upgrade` to update the system.
+6. Power off the VM.
+7. Create a clone of the VM, with the following configurations:
+    * Name: `VMDB`
+    * MAC Address Policy: `Generate new MAC addresses for all network adapters`
+    * Clone type: `Full clone`
+8. Navigate to **VMH > Settings > Network** and enable and configure the following Network Adapters:
+    * Adapter 1:
+        * Attached to: `NAT`
+    * Adapter 2:
+        * Attached to: `Internal Network`
+        * Name: `intnet`
+9. Navigate to **VMDB > Settings > Network** and enable and configure the following Network Adapters:
+    * Adapter 1:
+        * Attached to: `Internal Network`
+        * Name: `intnet`
 
 Database setup: (Ubuntu LTS VM)
 * Install postgreSQL 14:
