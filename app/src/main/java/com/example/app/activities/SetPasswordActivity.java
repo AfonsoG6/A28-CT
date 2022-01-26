@@ -52,17 +52,22 @@ public class SetPasswordActivity extends AppCompatActivity {
 	public void onClickSubmitNewPassword(View view) {
 		String password = passwordEditText.getText().toString();
 		String confirmPassword = confirmPasswordEditText.getText().toString();
+		passwordFeedback.setTextColor(Color.RED);
 		if (password.length() < MIN_PASSWORD_LENGTH) {
 			Log.d(TAG, "Password '" + password + "' is too short (" + password.length() + " < " + MIN_PASSWORD_LENGTH + ")");
 			passwordFeedback.setText("Password must be at least "+ MIN_PASSWORD_LENGTH + " characters long");
-			passwordFeedback.setTextColor(Color.RED);
+			passwordFeedback.setVisibility(View.VISIBLE);
+			return;
+		}
+		if (!PasswordInputFilter.containsAllNeededCharTypes(password)) {
+			Log.d(TAG, "Password '" + password + "' does not contain all needed character types");
+			passwordFeedback.setText("Password must contain at least one:\n- Uppercase letter\n- Lowercase letter\n- Number\n- Special character");
 			passwordFeedback.setVisibility(View.VISIBLE);
 			return;
 		}
 		if (!password.equals(confirmPassword)) {
 			Log.d(TAG, "Passwords do not match (" + password + " != " + confirmPassword + ")");
 			passwordFeedback.setText("Passwords do not match");
-			passwordFeedback.setTextColor(Color.RED);
 			passwordFeedback.setVisibility(View.VISIBLE);
 			return;
 		}
@@ -73,7 +78,6 @@ public class SetPasswordActivity extends AppCompatActivity {
 			e.printStackTrace();
 			Log.e(TAG, "Failed to set password due to " + e.getMessage());
 			passwordFeedback.setText("Internal error occurred");
-			passwordFeedback.setTextColor(Color.RED);
 			passwordFeedback.setVisibility(View.VISIBLE);
 			return;
 		}
