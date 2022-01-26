@@ -26,7 +26,63 @@ There are two main pieces of sensitive information that a contact tracing system
 
 # Geting Started
 
-\[Add literally everything\]  
+2 VMs, one for the hub, one for the database
+VMH is connected to the internet and to the switch sw-1
+VMDB is connected only to sw-1
+
+Database setup: (Ubuntu LTS VM)
+* Install postgreSQL 14:
+```sh
+sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+sudo apt-get update
+sudo apt-get -y install postgresql
+```
+* Copy the directory "A28-CT/postgres" to the VMDB
+* Change directory to that directory, and add execution permissions to shell scripts:
+```sh
+cd postgres
+chmod +x *.sh
+```
+* Run ssl.sh with root privileges:
+```sh
+sudo ./ssl.sh
+```
+* Change to user "postgres", go to the directory "postgres", and run the script "setup.sh":
+```sh
+sudo su - postgres
+cd /home/<user>/postgres
+./setup.sh
+```
+
+Hub setup: (Ubuntu LTS VM)
+* Install Gradle:
+```sh
+
+```
+* Install Java 11+:
+```sh
+sudo apt-get install openjdk-11-jdk
+```
+* Copy the whole project to the VMH
+* Change directory to that directory
+* Change Database IP in the configuration file to match the VMDB:
+* Execute the shell command:
+```sh
+gradle :hub:run
+```
+
+App Setup: (Physical Android 6+ Devices) Cannot be tested on emulators due to the use of Bluetooth Low Energy (BLE)
+* Build the app either on your own machine or in the VMH
+* If building on the VMH, and already having done the Hub setup, you only to install the Android SDK and ADB:
+```sh
+
+```
+* If building on your own machine, you might also need to install Gradle and Java 11+ as described above:
+* Connect your Android device(s) to the chosen machine through a USB cable, and run the app:
+```sh
+adb blabla
+```
 
 ---
 
