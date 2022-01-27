@@ -91,23 +91,30 @@ Step-by-step instructions:
     sudo ifconfig enp0s3 192.168.0.10/24 up
     ```
 
-15. Power off the VMDB
-16. Go to **VMDB > Settings > Network** and disable "Adapter 2" (Which should be the one "Attached to: NAT")
+15. Run the following command to set up a simple firewall that only accepts requests from VMH to port 5432:
 
-17. Now that the VMDB is ready, we'll setup the VMH, so we boot it up.
-18. To setup the network adapter that is going to connect to the VMDB, we run the following command:
+    ```sh
+    sudo iptables -P INPUT DROP &&
+    sudo iptables -I INPUT --src 192.168.0.20 -m tcp -p tcp --dport 5432 -j ACCEPT
+    ```
+
+16. Power off the VMDB
+17. Go to **VMDB > Settings > Network** and disable "Adapter 2" (Which should be the one "Attached to: NAT")
+
+18. Now that the VMDB is ready, we'll setup the VMH, so we boot it up.
+19. To setup the network adapter that is going to connect to the VMDB, we run the following command:
 
     ```sh
     sudo ifconfig enp0s3 192.168.0.20/24 up
     ```
 
-19. Install Java 11:
+20. Install Java 11:
 
     ```sh
     sudo apt install openjdk-11-jdk
     ```
 
-20. Install Gradle:
+21. Install Gradle:
 
     ```sh
     sudo apt -y install vim apt-transport-https dirmngr wget software-properties-common &&
@@ -116,8 +123,8 @@ Step-by-step instructions:
     sudo apt -y install gradle
     ```
 
-21. Transfer the whole project directory `A28-CT` to the VMH through your preferred method. (ex: Drag'n'Drop, Shared Folders, etc.)
-22. Change directory to the directory `A28-CT` and run the command
+22. Transfer the whole project directory `A28-CT` to the VMH through your preferred method. (ex: Drag'n'Drop, Shared Folders, etc.)
+23. Change directory to the directory `A28-CT` and run the command
 
     ```sh
     gradle hub:run
