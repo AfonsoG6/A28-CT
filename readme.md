@@ -35,29 +35,26 @@ Step-by-step instructions:
 
 1. Create a new Ubuntu (64-bit) VM, call it `VMH`
 2. Install [Ubuntu 20.04.3 LTS](https://ubuntu.com/download/desktop)
-3. Navigate to **Settings > General > Advanced**, and set both **Shared Clipboard** and **Drag'n'Drop** to `Bidirectional`.
-4. Boot the VM and open a terminal.
-5. Run the command `sudo apt update && sudo apt upgrade` to update the system.
-6. Power off the VM.
-7. Create a clone of the VM, with the following configurations:
-    * Name: `VMDB`
-    * MAC Address Policy: `Generate new MAC addresses for all network adapters`
-    * Clone type: `Full clone`
-8. Navigate to **VMH > Settings > Network** and enable and configure the following Network Adapters:
+3. Boot the VM and open a terminal.
+4. Run the command:
+
+    ```sh
+    sudo apt update && sudo apt upgrade && sudo apt install net-tools
+    ```
+
+5. Power off the VM.
+6. Go to **VMH > Settings > Network** and enable and configure the following Network Adapters:
     * Adapter 1:
         * Attached to: `Internal Network`
         * Name: `intnet`
     * Adapter 2:
         * Attached to: `NAT`
-
-9. Navigate to **VMDB > Settings > Network** and enable and configure the following Network Adapters:
-    * Adapter 1:
-        * Attached to: `Internal Network`
-        * Name: `intnet`
-    * Adapter 2: *(This one is temporary, and will be disabled further ahead)*
-        * Attached to: `NAT`
-10. We'll configure the VMDB first, so boot the VMDB.
-11. Open a terminal and run the commands:
+7. Create a clone of the VM, with the following configurations:
+    * Name: `VMDB`
+    * MAC Address Policy: `Generate new MAC addresses for all network adapters`
+    * Clone type: `Full clone`
+8. We'll configure the VMDB first, so boot the VMDB.
+9. Open a terminal and run the commands:
 
     ```sh
     sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list' &&
@@ -66,57 +63,65 @@ Step-by-step instructions:
     sudo apt -y install postgresql
     ```
 
-12. Transfer the directory `A28-CT/postgres` to the VMDB through your preferred method. (ex: Drag'n'Drop, Shared Folders, etc.)
-13. Change directory to that directory, and change some important permissions for the setup:
+10. Transfer the directory `A28-CT/postgres` to the VMDB through your preferred method. (ex: Drag'n'Drop, Shared Folders, etc.)
+11. Change directory to that directory, and change some important permissions for the setup:
 
     ```sh
     chmod +x *.sh && chmod 777 .
     ```
 
-14. Run ssl.sh with root privileges:
+12. Run ssl.sh with root privileges:
 
     ```sh
     sudo ./ssl.sh
     ```
 
-15. Change to user "postgres", go to the directory "postgres", and run the script "setup.sh":
+13. Change to user "postgres", go to the directory "postgres", and run the script "setup.sh":
 
     ```sh
     sudo su - postgres
     cd <path to postgres dir>
     ./setup.sh
+    exit
     ```
 
-16. Edit the file `/etc/network/interfaces` with the following:
+14. Run the following command to set the IP address of the VMDB:
 
     ```sh
-    auto enp0s3
-    iface enp0s3 inet static
-        address 192.168.0.10
-        netmask 255.255.255.0
-        dns-nameservers 8.8.8.8 8.8.4.4
+    sudo ifconfig enp0s3 192.168.0.10/24 up
     ```
 
-17. Restart the VMDB
+15. Power off the VMDB
+16. Go to **VMDB > Settings > Network** and disable "Adapter 2" (Which should be the one "Attached to: NAT")
 
+17. Now that the VMDB is ready, we'll setup the VMH, so we boot it up.
+18. To setup the network adapter that is going to connect to the VMDB, we run the following command:
 
+    ```sh
+    sudo ifconfig enp0s3 192.168.0.20/24 up
+    ```
 
-Hub setup: (Ubuntu LTS VM)
-* Install Gradle:
-```sh
+19. Install Java 11:
 
-```
-* Install Java 11+:
-```sh
-sudo apt-get install openjdk-11-jdk
-```
-* Copy the whole project to the VMH
-* Change directory to that directory
-* Change Database IP in the configuration file to match the VMDB:
-* Execute the shell command:
-```sh
-gradle :hub:run
-```
+    ```sh
+    sudo apt install openjdk-11-jdk
+    ```
+
+20. Install Gradle:
+
+    ```sh
+    sudo apt -y install vim apt-transport-https dirmngr wget software-properties-common &&
+    sudo add-apt-repository ppa:cwchien/gradle &&
+    sudo apt update &&
+    sudo apt -y install gradle
+    ```
+
+21. Transfer the whole project directory `A28-CT` to the VMH through your preferred method. (ex: Drag'n'Drop, Shared Folders, etc.)
+22. Change directory to the directory `A28-CT` and run the command
+
+    ```sh
+    gradle hub:run
+    ```
 
 App Setup: (Physical Android 6+ Devices) Cannot be tested on emulators due to the use of Bluetooth Low Energy (BLE)
 * Build the app either on your own machine or in the VMH
@@ -132,7 +137,6 @@ adb blabla
 
 ---
 
-  
 # Authors
 
 * Afonso Gomes - IST Master’s student - [Overview](https://github.com/AfonsoG6)
