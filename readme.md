@@ -34,7 +34,7 @@ The other one, which we'll call VMDB, will be running the PostgreSQL database.
 Step-by-step instructions:
 
 1. Create a new Ubuntu (64-bit) VM, call it `VMH`
-2. Install [Ubuntu 20.04.3 LTS](https://ubuntu.com/download/desktop) (Minimal installation is enough).
+2. Install [Ubuntu 20.04.3 LTS](https://ubuntu.com/download/desktop)
 3. Navigate to **Settings > General > Advanced**, and set both **Shared Clipboard** and **Drag'n'Drop** to `Bidirectional`.
 4. Boot the VM and open a terminal.
 5. Run the command `sudo apt update && sudo apt upgrade` to update the system.
@@ -45,39 +45,61 @@ Step-by-step instructions:
     * Clone type: `Full clone`
 8. Navigate to **VMH > Settings > Network** and enable and configure the following Network Adapters:
     * Adapter 1:
-        * Attached to: `NAT`
-    * Adapter 2:
         * Attached to: `Internal Network`
         * Name: `intnet`
+    * Adapter 2:
+        * Attached to: `NAT`
+
 9. Navigate to **VMDB > Settings > Network** and enable and configure the following Network Adapters:
     * Adapter 1:
         * Attached to: `Internal Network`
         * Name: `intnet`
+    * Adapter 2: *(This one is temporary, and will be disabled further ahead)*
+        * Attached to: `NAT`
+10. We'll configure the VMDB first, so boot the VMDB.
+11. Open a terminal and run the commands:
 
-Database setup: (Ubuntu LTS VM)
-* Install postgreSQL 14:
-```sh
-sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
-wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-sudo apt-get update
-sudo apt-get -y install postgresql
-```
-* Copy the directory "A28-CT/postgres" to the VMDB
-* Change directory to that directory, and add execution permissions to shell scripts:
-```sh
-cd postgres
-chmod +x *.sh
-```
-* Run ssl.sh with root privileges:
-```sh
-sudo ./ssl.sh
-```
-* Change to user "postgres", go to the directory "postgres", and run the script "setup.sh":
-```sh
-sudo su - postgres
-cd /home/<user>/postgres
-./setup.sh
-```
+    ```sh
+    sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list' &&
+    wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add - &&
+    sudo apt update &&
+    sudo apt -y install postgresql
+    ```
+
+12. Transfer the directory `A28-CT/postgres` to the VMDB through your preferred method. (ex: Drag'n'Drop, Shared Folders, etc.)
+13. Change directory to that directory, and change some important permissions for the setup:
+
+    ```sh
+    chmod +x *.sh && chmod 777 .
+    ```
+
+14. Run ssl.sh with root privileges:
+
+    ```sh
+    sudo ./ssl.sh
+    ```
+
+15. Change to user "postgres", go to the directory "postgres", and run the script "setup.sh":
+
+    ```sh
+    sudo su - postgres
+    cd <path to postgres dir>
+    ./setup.sh
+    ```
+
+16. Edit the file `/etc/network/interfaces` with the following:
+
+    ```sh
+    auto enp0s3
+    iface enp0s3 inet static
+        address 192.168.0.10
+        netmask 255.255.255.0
+        dns-nameservers 8.8.8.8 8.8.4.4
+    ```
+
+17. Restart the VMDB
+
+
 
 Hub setup: (Ubuntu LTS VM)
 * Install Gradle:
