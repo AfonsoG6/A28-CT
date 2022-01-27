@@ -17,7 +17,7 @@ CREATE TABLE infected_sks (
 );
 
 CREATE TABLE health_services (
-    id INT PRIMARY KEY NOT NULL,
+    id SERIAL PRIMARY KEY,
     email VARCHAR(100) NOT NULL UNIQUE,
     hashed_password VARCHAR(256) NOT NULL
 );

@@ -10,7 +10,7 @@ public class PostgreSQLJDBC {
 		try {
 			Class.forName("org.postgresql.Driver");
 			PostgreSQLJDBC.connection = DriverManager.getConnection(
-					"jdbc:postgresql://192.168.1.99:5432/sirs?sslmode=require",
+					"jdbc:postgresql://192.168.0.10:5432/sirs?ssl=true&sslrootcert=/etc/ssl/certs/rootCA.crt",
 					"cthub",
 					"a28cthubsirs"
 			);
