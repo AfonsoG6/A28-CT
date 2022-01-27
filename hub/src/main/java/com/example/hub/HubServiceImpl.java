@@ -113,7 +113,7 @@ public class HubServiceImpl extends HubServiceGrpc.HubServiceImplBase {
 		}
 
 		try {
-			long epoch = System.currentTimeMillis() / 1000;
+			long epoch = System.currentTimeMillis();
 			List<SKEpochDayPair> sks = InfectedSKManager.queryInfectedSKs(request.getLastQueryEpoch());
 			QueryInfectedSKsResponse response = QueryInfectedSKsResponse.newBuilder()
 					.addAllSks(sks)

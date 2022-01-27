@@ -45,11 +45,11 @@ App Setup: (Physical Android 6+ Devices) Cannot be tested on emulators due to th
 adb blabla
 ```
 
-### Prerequisites
+### [Prerequisites](https://gist.github.com/miguelpardal/36f6ef7864bfdeabe5c57b161aa80f2f#prerequisites)
 
 TODO
 
-### Installing
+### [Installing](https://gist.github.com/miguelpardal/36f6ef7864bfdeabe5c57b161aa80f2f#installing)
 
 TODO
 
@@ -57,7 +57,7 @@ TODO
 
 No automated tests were developed for this project.
 
-## Demo
+## [Demo](https://gist.github.com/miguelpardal/36f6ef7864bfdeabe5c57b161aa80f2f#demo)
 
 TODO
 
