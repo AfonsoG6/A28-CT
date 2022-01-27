@@ -49,6 +49,7 @@ Step-by-step instructions:
         * Name: `intnet`
     * Adapter 2:
         * Attached to: `NAT`
+        * Port Forwarding > New Rule (Host Port: `29292`, Guest Port: `29292`)
 7. Create a clone of the VM, with the following configurations:
     * Name: `VMDB`
     * MAC Address Policy: `Generate new MAC addresses for all network adapters`
