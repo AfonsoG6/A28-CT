@@ -29,111 +29,6 @@ There are two main pieces of sensitive information that a contact tracing system
 
 ## Geting Started
 
-Tu run this service we will need 2 virtual machines running [Ubuntu 20.04.3 LTS](https://ubuntu.com/download/desktop)
-
-One of these VMs, which we'll call VMH, will be running the Hub.
-The other one, which we'll call VMDB, will be running the PostgreSQL database.
-
-Step-by-step instructions:
-
-1. Create a new Ubuntu (64-bit) VM, call it `VMH`
-2. Install [Ubuntu 20.04.3 LTS](https://ubuntu.com/download/desktop)
-3. Boot the VM and open a terminal.
-4. Run the command:
-
-    ```sh
-    sudo apt update && sudo apt upgrade && sudo apt install net-tools
-    ```
-
-5. Power off the VM.
-6. Go to **VMH > Settings > Network** and enable and configure the following Network Adapters:
-    * Adapter 1:
-        * Attached to: `Internal Network`
-        * Name: `intnet`
-    * Adapter 2:
-        * Attached to: `NAT`
-        * Port Forwarding > New Rule (Host Port: `29292`, Guest Port: `29292`)
-7. Create a clone of the VM, with the following configurations:
-    * Name: `VMDB`
-    * MAC Address Policy: `Generate new MAC addresses for all network adapters`
-    * Clone type: `Full clone`
-8. We'll configure the VMDB first, so boot the VMDB.
-9. Open a terminal and run the commands:
-
-    ```sh
-    sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list' &&
-    wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add - &&
-    sudo apt update &&
-    sudo apt -y install postgresql
-    ```
-
-10. Transfer the directory `A28-CT/postgres` to the VMDB through your preferred method. (ex: Drag'n'Drop, Shared Folders, etc.)
-11. Change directory to that directory, and change some important permissions for the setup:
-
-    ```sh
-    chmod +x *.sh && chmod 777 .
-    ```
-
-12. Run ssl.sh with root privileges:
-
-    ```sh
-    sudo ./ssl.sh
-    ```
-
-13. Change to user "postgres", go to the directory "postgres", and run the script "setup.sh":
-
-    ```sh
-    sudo su - postgres
-    cd <path to postgres dir>
-    ./setup.sh
-    exit
-    ```
-
-14. Run the following command to set the IP address of the VMDB:
-
-    ```sh
-    sudo ifconfig enp0s3 192.168.0.10/24 up
-    ```
-
-15. Run the following command to set up a simple firewall that only accepts requests from VMH to port 5432:
-
-    ```sh
-    sudo iptables -P INPUT DROP &&
-    sudo iptables -I INPUT --src 192.168.0.20 -m tcp -p tcp --dport 5432 -j ACCEPT
-    ```
-
-16. Power off the VMDB
-17. Go to **VMDB > Settings > Network** and disable "Adapter 2" (Which should be the one "Attached to: NAT")
-
-18. Now that the VMDB is ready, we'll setup the VMH, so we boot it up.
-19. To setup the network adapter that is going to connect to the VMDB, we run the following command:
-
-    ```sh
-    sudo ifconfig enp0s3 192.168.0.20/24 up
-    ```
-
-20. Install Java 11:
-
-    ```sh
-    sudo apt install openjdk-11-jdk
-    ```
-
-21. Install Gradle:
-
-    ```sh
-    sudo apt -y install vim apt-transport-https dirmngr wget software-properties-common &&
-    sudo add-apt-repository ppa:cwchien/gradle &&
-    sudo apt update &&
-    sudo apt -y install gradle
-    ```
-
-22. Transfer the whole project directory `A28-CT` to the VMH through your preferred method. (ex: Drag'n'Drop, Shared Folders, etc.)
-23. Change directory to the directory `A28-CT` and run the command
-
-    ```sh
-    gradle hub:run
-    ```
-
 App Setup: (Physical Android 6+ Devices) Cannot be tested on emulators due to the use of Bluetooth Low Energy (BLE)
 
 * Build the app either on your own machine or in the VMH
@@ -167,6 +62,123 @@ No automated tests were developed for this project.
 TODO
 
 ## Deployment
+
+### Preparing the Virtual Machines
+
+Tu run this service we will need 2 virtual machines running [Ubuntu 20.04.3 LTS](https://ubuntu.com/download/desktop)
+
+One of these VMs, which we'll call VMH, will be running the Hub and will be connected to the internet through a NAT.
+
+The other one, which we'll call VMDB, will be running the PostgreSQL database and will only be connected to a local network shared with the VMH.
+
+Step-by-step instructions for preparing the VMs:
+
+*(These instructions assume you're using [VirtualBox](https://www.virtualbox.org/))*
+
+1. Create a new Ubuntu (64-bit) VM, call it `VMH`
+2. Install [Ubuntu 20.04.3 LTS](https://ubuntu.com/download/desktop)
+3. Boot the VM and open a terminal.
+4. Run the command:
+
+    ```sh
+    sudo apt update && sudo apt upgrade && sudo apt install net-tools
+    ```
+
+5. Power off the VM.
+6. Go to **VMH > Settings > Network** and enable and configure the following Network Adapters:
+    * Adapter 1:
+        * Attached to: `Internal Network`
+        * Name: `intnet`
+    * Adapter 2:
+        * Attached to: `NAT`
+        * Port Forwarding > New Rule (Host Port: `29292`, Guest Port: `29292`)
+7. Create a clone of the VM, with the following configurations:
+    * Name: `VMDB`
+    * MAC Address Policy: `Generate new MAC addresses for all network adapters`
+    * Clone type: `Full clone`
+
+### Setting up the VMDB (Database)
+
+1. Boot up the VMDB.
+2. Open a terminal and run the commands:
+
+    ```sh
+    sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list' &&
+    wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add - &&
+    sudo apt update &&
+    sudo apt -y install postgresql
+    ```
+
+3. Transfer the directory `A28-CT/postgres` to the VMDB through your preferred method. (ex: Drag'n'Drop, Shared Folders, etc.)
+4. Change directory to that directory, and change some important permissions for the setup:
+
+    ```sh
+    chmod +x *.sh && chmod 777 .
+    ```
+
+5. Run ssl.sh with root privileges:
+
+    ```sh
+    sudo ./ssl.sh
+    ```
+
+6. Change to user "postgres", go to the directory "postgres", and run the script "setup.sh":
+
+    ```sh
+    sudo su - postgres
+    cd <path to postgres dir>
+    ./setup.sh
+    exit
+    ```
+
+7. Run the following command to set the IP address of the VMDB:
+
+    ```sh
+    sudo ifconfig enp0s3 192.168.0.10/24 up
+    ```
+
+8. Run the following command to set up a simple firewall that only accepts requests from VMH to port 5432:
+
+    ```sh
+    sudo iptables -P INPUT DROP &&
+    sudo iptables -I INPUT --src 192.168.0.20 -m tcp -p tcp --dport 5432 -j ACCEPT
+    ```
+
+9. Power off the VMDB
+10. Go to **VMDB > Settings > Network** and disable "Adapter 2" (Which should be the one "Attached to: NAT")
+
+### Setting up the VMH (Hub)
+
+1. Boot up the VMH.
+2. To setup the network adapter that is going to connect to the VMDB, we run the following command:
+
+    ```sh
+    sudo ifconfig enp0s3 192.168.0.20/24 up
+    ```
+
+3. Install Java 11:
+
+    ```sh
+    sudo apt install openjdk-11-jdk
+    ```
+
+4. Install Gradle:
+
+    ```sh
+    sudo apt -y install vim apt-transport-https dirmngr wget software-properties-common &&
+    sudo add-apt-repository ppa:cwchien/gradle &&
+    sudo apt update &&
+    sudo apt -y install gradle
+    ```
+
+5. Transfer the whole project directory `A28-CT` to the VMH through your preferred method. (ex: Drag'n'Drop, Shared Folders, etc.)
+6. Change directory to the directory `A28-CT` and run the command
+
+    ```sh
+    gradle hub:run
+    ```
+
+### Installing the App in an Android Device
 
 TODO
 
