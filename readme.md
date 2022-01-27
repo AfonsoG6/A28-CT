@@ -1,30 +1,33 @@
-# Contact Tracing 
+# Contact Tracing
 
-This project aims to assist in tracing the spread of a virus during a pandemic. By automatically registering encounters with other users of the app, you are can later be notified in case those users become infected with the virus, and vice-versa. Furthermore, our solution focuses on protecting the users’ data, reducing the risk of sensitive information (such as identity, location and infection status) being leaked. 
+This project aims to assist in tracing the spread of a virus during a pandemic. By automatically registering encounters with other users of the app, you are can later be notified in case those users become infected with the virus, and vice-versa. Furthermore, our solution focuses on protecting the users’ data, reducing the risk of sensitive information (such as identity, location and infection status) being leaked.
 
 \[INSERT GLOSSARY\]
 
 ## General Information
 
 Contact Tracing systems can be extremely useful in controlling the spread of a virus in a pandemic scenario. However, due to the nature of the data these systems deal with, they can also constitute a great  
-privacy problem for users. 
+privacy problem for users.
 
 There are two main pieces of sensitive information that a contact tracing system deals with and stores in some way: a user’s infection status and a user’s contacts (which may include the location and time of those contacts). With our solution, we aspire to mitigate these problems by reducing, as much as possible, the ways in which a malicious or otherwise neglectful actor may attack the system and / or disclose the forementioned information.  
 
 ### Built With
 
+* Hub OS: Ubuntu 20.04.3 LTS
+* DB OS: Ubuntu 20.04.3 LTS
+* App OS: Android 6+
 * Language: Java
-* App ↔ Server Communication: gRPC with SSL/TLS  
+* App ↔ Hub Communication: gRPC with SSL/TLS  
 * App ↔ App Communication: Bluetooth Low Energy (BLE)
 * App Local Storage: SQLite JDBC
-* Server-side Storage: PostgreSQL  
+* Server-side Storage: PostgreSQL 14
 * Building and dependencies: Gradle
 * Firewall Utility: Iptables
-* Tools used in development: Android Studio, IntelliJ IDEA  
+* Tools used in development: Android Studio, IntelliJ IDEA
 
 ---
 
-# Geting Started
+## Geting Started
 
 Tu run this service we will need 2 virtual machines running [Ubuntu 20.04.3 LTS](https://ubuntu.com/download/desktop)
 
@@ -132,61 +135,78 @@ Step-by-step instructions:
     ```
 
 App Setup: (Physical Android 6+ Devices) Cannot be tested on emulators due to the use of Bluetooth Low Energy (BLE)
+
 * Build the app either on your own machine or in the VMH
 * If building on the VMH, and already having done the Hub setup, you only to install the Android SDK and ADB:
+
 ```sh
 
 ```
+
 * If building on your own machine, you might also need to install Gradle and Java 11+ as described above:
 * Connect your Android device(s) to the chosen machine through a USB cable, and run the app:
+
 ```sh
 adb blabla
 ```
 
----
+### Prerequisites
 
-# Authors
+TODO
 
-* Afonso Gomes - IST Master’s student - [Overview](https://github.com/AfonsoG6)
-* Miguel Henriques - IST Master’s student - [Overview](https://github.com/miguelchenriques)
-* António Martins - IST Master’s student - [Overview](https://github.com/AL-CT)
+### Installing
 
-## Versioning
+TODO
 
-\[ ¯\\\_(ツ)\_/¯ \]
+### Testing
 
-## License
+No automated tests were developed for this project.
+
+## Demo
+
+TODO
+
+## Deployment
+
+TODO
+
+## Additional Information
+
+### Authors
+
+* Afonso Gomes - IST Master’s student - [@AfonsoG6](https://github.com/AfonsoG6)
+* Miguel Henriques - IST Master’s student - [@miguelchenriques](https://github.com/miguelchenriques)
+* António Martins - IST Master’s student - [@AL-CT](https://github.com/AL-CT)
+
+### License
 
 This project is licensed under the MIT License.  
 
-    MIT License  
-      
-    Copyright (c) \[2022\] \[A28-CT Team\]  
-      
-    Permission is hereby granted, free of charge, to any person obtaining a copy  
-    of this software and associated documentation files (the "Software"), to deal  
-    in the Software without restriction, including without limitation the rights  
-    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell  
-    copies of the Software, and to permit persons to whom the Software is  
-    furnished to do so, subject to the following conditions:  
-      
-    The above copyright notice and this permission notice shall be included in all  
-    copies or substantial portions of the Software.  
-      
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  
-    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,  
-    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE  
-    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER  
-    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,  
-    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE  
-    SOFTWARE.
+```txt
+MIT License
 
-##  Acknowledgments
+Copyright (c) [2022] [A28-CT Team]  
 
-This project was heavily inspired on the original [DP^3T Project](https://github.com/DP-3T/documents). 
-Please follow the link above in order to check out their work. 
+Permission is hereby granted, free of charge, to any person obtaining a copy  
+of this software and associated documentation files (the "Software"), to deal  
+in the Software without restriction, including without limitation the rights  
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell  
+copies of the Software, and to permit persons to whom the Software is  
+furnished to do so, subject to the following conditions:  
 
-  
-  
-  
-  
+The above copyright notice and this permission notice shall be included in all  
+copies or substantial portions of the Software.  
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,  
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE  
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER  
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,  
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE  
+SOFTWARE.
+```
+
+### Acknowledgments
+
+This project was heavily inspired on the original [DP^3T Project](https://github.com/DP-3T/documents).
+Please follow the link above in order to check out their work.
