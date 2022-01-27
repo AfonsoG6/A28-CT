@@ -29,39 +29,46 @@ There are two main pieces of sensitive information that a contact tracing system
 
 ## Geting Started
 
-App Setup: (Physical Android 6+ Devices) Cannot be tested on emulators due to the use of Bluetooth Low Energy (BLE)
+### Prerequisites
 
-* Build the app either on your own machine or in the VMH
-* If building on the VMH, and already having done the Hub setup, you only to install the Android SDK and ADB:
+* #### Database prerequisites
 
-```sh
+  * Hardware:
+    * Physical Computer or Virtual Machine
+  * Operating System:
+    * Ubuntu 20.04.3 LTS
+  * Software:
+    * PostgreSQL 14
 
-```
+* #### Hub prerequisites
 
-* If building on your own machine, you might also need to install Gradle and Java 11+ as described above:
-* Connect your Android device(s) to the chosen machine through a USB cable, and run the app:
+  * Hardware:
+    * Physical Computer or Virtual Machine
+  * Operating System:
+    * Ubuntu 20.04.3 LTS
+  * Software:
+    * Java 11
+    * Gradle
 
-```sh
-adb blabla
-```
+* #### App development prerequisites
 
-### [Prerequisites](https://gist.github.com/miguelpardal/36f6ef7864bfdeabe5c57b161aa80f2f#prerequisites)
+  * Software:
+    * Java 11
+    * Gradle
+    * Android SDK 11.0.10 (API 30)
 
-TODO
+* #### App prerequisites
 
-### [Installing](https://gist.github.com/miguelpardal/36f6ef7864bfdeabe5c57b161aa80f2f#installing)
-
-TODO
-
-### Testing
-
-No automated tests were developed for this project.
+  * Hardware:
+    * Physical Android device
+  * Operating System:
+    * Android 6+
 
 ## [Demo](https://gist.github.com/miguelpardal/36f6ef7864bfdeabe5c57b161aa80f2f#demo)
 
 TODO
 
-## Deployment
+## Installation/Deployment
 
 ### Preparing the Virtual Machines
 
