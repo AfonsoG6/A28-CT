@@ -64,10 +64,26 @@ There are two main pieces of sensitive information that a contact tracing system
   * Operating System:
     * Android 6+
 
-## [Demo](https://gist.github.com/miguelpardal/36f6ef7864bfdeabe5c57b161aa80f2f#demo)
+## Demo
 
-TODO
+Some of the features of the app are demonstrated in the following table:
 
+| Description                                                                                              | Image                                                                   |
+|----------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------|
+| Setting a new password, password does not have all the required character types                          | <img src="./demo/Set_Password_Chars.jpeg" style="width:300px;" />       |
+| Setting a new password, password does not have the required length                                       | <img src="./demo/Set_Password_Length.jpeg" style="width:300px;" />      |
+| Setting a new password, password and confirmation do not match                                           | <img src="./demo/Set_Password_Match.jpeg" style="width:300px;" />       |
+| Main Screen                                                                                              | <img src="./demo/Main_Screen.jpeg" style="width:300px;" />              |
+| A user tries to claim infection with an invalid ICC                                                      | <img src="./demo/Submit_ICC_Invalid.jpeg" style="width:300px;" />       |
+| After receiving an ICC from an health authority, the user submits it in the app and is successful        | <img src="./demo/Submit_ICC_Success.jpeg" style="width:300px;" />       |
+| Checked risk of infection, no risk detected                                                              | <img src="./demo/Checked_Infection_Safe.jpeg" style="width:300px;" />   |
+| Checked risk of infection, risk detected                                                                 | <img src="./demo/Checked_Infection_Unsafe.jpeg" style="width:300px;" /> |
+| Notification of risk of infection and informing that the service is running                              | <img src="./demo/Notifications.jpeg" style="width:300px;" />            |
+| After user is notified of a risk of infection, he's asked for his password, password given was incorrect | <img src="./demo/Ask_Password_Incorrect.jpeg" style="width:300px;" />   |
+| After user is notified of a risk of infection, all his infected contacts are shown                       | <img src="./demo/Show_Contacts.jpeg" style="width:300px;" />            |
+
+Database containing 2 messages received through Bluetooth LE from another device:
+<img src="./demo/Received_Messages_DB.png" style="width:800px;" />
 ## Installation/Deployment
 
 ### Preparing the Virtual Machines
