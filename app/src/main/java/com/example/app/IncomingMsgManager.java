@@ -102,6 +102,7 @@ public class IncomingMsgManager {
                 }
             }
         }
+        Log.d(TAG, "Current number of contacts: " + numContacts);
         return numContacts >= 6;
     }
 
@@ -147,7 +148,11 @@ public class IncomingMsgManager {
             return false;
         }
         try {
-            if (extSks != null) extSks = new ArrayList<>();
+            if (extSks == null) {
+                Log.d(TAG, "Null infected SKs List received from Hub");
+                extSks = new ArrayList<>();
+            }
+            Log.d(TAG, "Got " + extSks.size() + " infected SKs from Hub");
             boolean inRisk = inRiskOfInfection(extSks);
             if (inRisk && doNotify) {
                 IncomingMsgManager.sendInfectionNotification(context);

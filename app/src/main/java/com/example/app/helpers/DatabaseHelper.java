@@ -7,6 +7,7 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Base64;
 import android.util.Log;
 import androidx.annotation.Nullable;
 import com.example.app.Constants;
@@ -38,7 +39,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		try {
 			String stmt = "CREATE TABLE IF NOT EXISTS sks (epoch_day INTEGER PRIMARY KEY NOT NULL, sk BLOB NOT NULL);";
 			db.execSQL(stmt);
-			stmt = "CREATE TABLE IF NOT EXISTS recvd_msgs (interval_n INTEGER NOT NULL, msg BLOB NOT NULL, enc_lat BLOB, enc_long BLOB, infected INTEGER NOT NULL, PRIMARY KEY (interval_n, msg));";
+			stmt = "CREATE TABLE IF NOT EXISTS recvd_msgs (interval_n INTEGER NOT NULL, msg TEXT NOT NULL, enc_lat BLOB, enc_long BLOB, infected INTEGER NOT NULL, PRIMARY KEY (interval_n, msg));";
 			db.execSQL(stmt);
 			Log.i(TAG, "Created database tables (sks & recvd_msgs)");
 		}
@@ -160,10 +161,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	}
 
 	public boolean insertRecvdMessage(byte[] message, long intervalN, byte[] encLat, byte[] encLong) {
-		Log.d(TAG, "Inserting Received Msg: " + "msg=" + Arrays.toString(message) + ", intervalN=" + intervalN + ", encLat=" + Arrays.toString(encLat) + ", encLong=" + Arrays.toString(encLong) + ", infected=0");
 		try (SQLiteDatabase db = this.getWritableDatabase()) {
 			ContentValues cv = new ContentValues();
-			cv.put("msg", message);
+			String msgB64 = Base64.encodeToString(message, Base64.NO_WRAP);
+			Log.d(TAG, "Inserting Received Msg: " + "msg=" + msgB64 + ", intervalN=" + intervalN + ", encLat=" + Arrays.toString(encLat) + ", encLong=" + Arrays.toString(encLong) + ", infected=0");
+			cv.put("msg", msgB64);
 			cv.put("interval_n", intervalN);
 			if (encLat.length == 0 || encLong.length == 0) {
 				// If failed to get full location information, don't insert any location information
@@ -189,10 +191,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	}
 
 	public boolean existsRecvdMessage(byte[] message, long intervalN) {
-		Log.d(TAG, "Checking if Received Msg exists: " + "msg=" + Arrays.toString(message) + ", intervalN=" + intervalN);
 		try (SQLiteDatabase db = this.getReadableDatabase()) {
 			String stmt = "SELECT * FROM recvd_msgs WHERE interval_n = ? AND msg = ?";
-			String[] args = {String.valueOf(intervalN), Arrays.toString(message)};
+			String msgB64 = Base64.encodeToString(message, Base64.NO_WRAP);
+			Log.d(TAG, "Checking if Received Msg exists: " + "msg=" + msgB64 + ", intervalN=" + intervalN);
+			String[] args = {String.valueOf(intervalN), msgB64};
 			try (Cursor cursor = db.rawQuery(stmt, args)) {
 				return cursor.moveToFirst();
 			}
@@ -215,10 +218,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	}
 
 	public void markContactMsgInfected(byte[] currentMsg, long intervalN) {
-		Log.d(TAG, "Marking contact Msg as infected: " + "msg=" + Arrays.toString(currentMsg) + ", intervalN=" + intervalN);
 		try (SQLiteDatabase db = this.getWritableDatabase()) {
 			String stmt = "UPDATE recvd_msgs SET infected = 1 WHERE interval_n = ? AND msg = ?";
-			String[] args = {String.valueOf(intervalN), Arrays.toString(currentMsg)};
+			String msgB64 = Base64.encodeToString(currentMsg, Base64.NO_WRAP);
+			Log.d(TAG, "Marking contact Msg as infected: " + "msg=" + msgB64 + ", intervalN=" + intervalN);
+			String[] args = {String.valueOf(intervalN), msgB64};
 			db.execSQL(stmt, args);
 		}
 	}

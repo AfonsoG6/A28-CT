@@ -7,6 +7,7 @@ import com.google.protobuf.ByteString;
 import java.sql.*;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class InfectedSKManager {
@@ -37,6 +38,7 @@ public class InfectedSKManager {
 			while (rs.next()) {
 				int epochDay = rs.getInt("epoch_day");
 				byte[] sk = rs.getBytes("sk");
+				System.out.println("sk: " + Arrays.toString(sk) + ", epochDay: " + epochDay);
 				SKEpochDayPair pair = SKEpochDayPair.newBuilder()
 						.setEpochDay(epochDay)
 						.setSk(ByteString.copyFrom(sk))
