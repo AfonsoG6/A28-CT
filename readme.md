@@ -130,7 +130,8 @@ Step-by-step instructions for preparing the VMs:
     sudo apt -y install postgresql
     ```
 
-3. Transfer the directory `A28-CT/scripts/database` to the VMDB through your preferred method. (ex: Drag'n'Drop, Shared Folders, etc.)
+3. Transfer the directory `A28-CT/scripts/database` to the VMDB through your preferred method. (ex: Drag'n'Drop, Shared Folders, etc.),
+make sure the files are in unix format and not windows.
 4. Change directory to that directory, and change some important permissions for the setup:
 
     ```sh
