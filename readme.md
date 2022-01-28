@@ -203,7 +203,16 @@ Step-by-step instructions for preparing the VMs:
 
 ### Installing the App in an Android Device
 
-TODO
+1. Install Android SDK in order to have access to the adb platform tool.
+2. Find the path to the installed adb binary and add it to you PATH environment variable.
+   * Example for windows: path = "C:\Users<username>\AppData\Local\Android\Sdk\platform-tools\adb.exe"
+3. Turn on Developer Debug mode on your Android Device.
+4. Connect your device to your computer using a USB cable and accept the connection.
+5. Run the following command on your computer:
+
+    ```sh
+    adb install path\to\project\A28-CT\app\release\app-release.apk
+    ```
 
 ## Additional Information
 

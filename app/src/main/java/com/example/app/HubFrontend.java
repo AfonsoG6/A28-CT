@@ -17,8 +17,10 @@ import org.conscrypt.Conscrypt;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -31,12 +33,17 @@ import java.util.concurrent.TimeUnit;
 public class HubFrontend {
 	private static final String TAG = HubFrontend.class.getName();
 
+	private final String hub_hostname;
 	private static HubFrontend instance; // Singleton
 	private final SSLSocketFactory sslSocketFactory;
 
 	private HubFrontend(Context context) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException,
 			KeyManagementException {
 		Log.i(TAG, "Creating HubFrontend instance");
+		try (BufferedReader br = new BufferedReader(new InputStreamReader(context.getResources().openRawResource(R.raw.hub_hostname)))) {
+			hub_hostname = br.readLine();
+			Log.d(TAG, "Hub hostname: " + hub_hostname);
+		}
 		// Install Conscrypt provider
 		Security.insertProviderAt(Conscrypt.newProvider(), Security.getProviders().length);
 
@@ -68,7 +75,7 @@ public class HubFrontend {
 	}
 
 	private ManagedChannel buildChannel() {
-		return OkHttpChannelBuilder.forAddress("194.210.62.136", 29292)
+		return OkHttpChannelBuilder.forAddress(hub_hostname, 29292)
 				.useTransportSecurity()
 				.sslSocketFactory(sslSocketFactory)
 				.hostnameVerifier((hostname, session) -> true) // Ignore hostname verification for now since the server is local
