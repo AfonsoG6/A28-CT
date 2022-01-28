@@ -33,7 +33,6 @@ public class ContactServer {
 
     private static final List<ConnectedDevice> connectedDevices = new ArrayList<>();
 
-    //TODO: Ver possível memory leak
     private static IncomingMsgManager inMsgManager;
 
     public static void startServer(Context context) {
