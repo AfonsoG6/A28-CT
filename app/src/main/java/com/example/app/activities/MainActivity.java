@@ -10,13 +10,22 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import com.example.app.ContactTracingService;
 import com.example.app.IncomingMsgManager;
+import com.example.app.OutgoingMsgManager;
 import com.example.app.R;
+import com.example.app.exceptions.DatabaseInsertionFailedException;
+import com.example.app.exceptions.NotFoundInDatabaseException;
+import com.example.app.helpers.EpochHelper;
+import com.example.app.helpers.SKHelper;
+
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 
 public class MainActivity extends AppCompatActivity {
 	private static final String TAG = MainActivity.class.getName();
@@ -47,6 +56,21 @@ public class MainActivity extends AppCompatActivity {
 		super.onActivityResult(requestCode, resultCode, data);
 		if (requestCode == REQUEST_ENABLE_BT && resultCode != RESULT_OK) {
 			promptEnableBluetooth();
+		}
+	}
+
+	public void onClickDemoButton(View view) {
+		try {
+			OutgoingMsgManager omm = new OutgoingMsgManager(this.getApplicationContext());
+			byte[] sk = omm.getSK(this.getApplicationContext(), EpochHelper.getCurrentEpochDay());
+			for (int i=0; i<6; i++) {
+				long intervalN = EpochHelper.getCurrentInterval() + i;
+				imm.addMessageToDatabase(SKHelper.generateMsg(sk, intervalN), intervalN);
+			}
+			Toast.makeText(this.getApplicationContext(), "6 own messages added to database", Toast.LENGTH_SHORT).show();
+		} catch (NoSuchAlgorithmException | DatabaseInsertionFailedException | IOException | NotFoundInDatabaseException e) {
+			e.printStackTrace();
+			Toast.makeText(this.getApplicationContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
 		}
 	}
 
